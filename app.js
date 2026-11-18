@@ -705,7 +705,7 @@ var topics=[
   {title:'Giải tích', tools:['derivative'], preview:'derivative', summary:'Đạo hàm và hệ số góc tiếp tuyến'},
   {title:'Xác suất – Thống kê', tools:['combination','statistics','frequency'], preview:'statistics', summary:'Tổ hợp, xác suất, trung bình và tần số'},
   {title:'Hình học phẳng', geometry:true, tools:['geometry','pythag','heron'], preview:'heron', summary:'Độ dài, góc, chu vi và diện tích'},
-  {title:'Hình học không gian', geometry:true, tools:['solid'], preview:'solid', summary:'Thể tích và diện tích bề mặt'},
+  {title:'Hình học không gian', geometry:true, tools:['solid'], preview:'solid', summary:'Mô hình 3D, hình khai triển, diện tích và thể tích'},
   {title:'Tọa độ', geometry:true, tools:['coordinate'], preview:'coordinate', summary:'Khoảng cách, trung điểm và đường thẳng'},
   {title:'Đo lường', geometry:true, tools:['unit','time'], preview:'unit', summary:'Chuyển đổi đơn vị và tính thời lượng'}
 ];
@@ -932,7 +932,6 @@ var originalExamples = {
   'da-giac':['Chọn một ngũ giác và đếm số cạnh.', 'Với ngũ giác đơn, tổng góc trong là (5 − 2) × 180° = 540°.'],
   'cac-duong-dac-biet-trong-tam-giac':['Chọn Trung tuyến rồi quan sát vị trí giao của ba đường.', 'Ba đường đồng quy tại trọng tâm. Từ đỉnh đến trọng tâm dài 2/3 trung tuyến.'],
   'cac-hinh-dong-dang':['Đặt tỉ số k = 2 rồi so sánh các cạnh tương ứng.', 'Nếu AB = 6 thì A′B′ = 12. Các góc tương ứng bằng nhau và diện tích tăng gấp 4 lần.'],
-  'hinh-hoc-3d':['Quan sát hình lập phương từ các hướng khác nhau.', 'Đếm được 6 mặt, 12 cạnh và 8 đỉnh.'],
   'bieu-do/bieu-do-tranh':['Đặt tiêu đề “Số quyển sách”. Thêm An = 2 và Bình = 4.', 'Bình có số sách gấp đôi An. Nếu mỗi biểu tượng ứng với 1 quyển thì hai hàng có 2 và 4 biểu tượng.'],
   'bieu-do/bieu-do-cot':['Điền ba giá trị cột 3, 5 và 2. Đặt tên tương ứng An, Bình và Chi.', 'Cột Bình cao nhất, ứng với 5. Tổng ba giá trị là 10.'],
   'bieu-do/bieu-do-cotkep':['Nhập hai nhóm có cặp số (3; 5) và (4; 4).', 'Nhóm thứ nhất có chênh lệch 2, nhóm thứ hai có hai cột bằng nhau.'],
@@ -1547,60 +1546,395 @@ function suiteTransform(id,host,triangle) {
   },{action:'Dựng hình',live:true});
 }
 
-function suiteSolid(host) {
-  var kinds=[['cube','Hình lập phương'],['box','Hình hộp chữ nhật'],['pyramid','Hình chóp đáy chữ nhật'],
-    ['cylinder','Hình trụ'],['cone','Hình nón'],['sphere','Hình cầu']];
-  suiteWorkbench(host,[['shape','Khối hình',kinds],['a','Chiều dài cạnh hoặc bán kính',4,.1,10000],
-    ['b','Chiều rộng đáy',3,.1,10000],['h','Chiều cao',5,.1,10000],
-    ['turn','Góc xoay ngang',32,-180,180,1,'range'],['tilt','Góc nhìn từ trên',23,-85,85,1,'range']],values=>{
-    var kind=values.shape,a=suiteNumber(values,'a',.1,10000),b=suiteNumber(values,'b',.1,10000),h=suiteNumber(values,'h',.1,10000);
-    if(kind==='cube'){b=a;h=a;}
-    var turn=suiteNumber(values,'turn',-180,180)*radians,tilt=suiteNumber(values,'tilt',-85,85)*radians;
-    var vertices=[],faces=[],rows=[];
-    function ring(radius,z){
-      return Array.from({length:48},(_,i)=>[radius*Math.cos(i*Math.PI/24),radius*Math.sin(i*Math.PI/24),z]);
+var solidFamilies=[
+  ['Lớp 7',[
+    ['cube','Hình lập phương',['Cạnh a'],[4],'Đổi góc nhìn, rồi đối chiếu sáu mặt vuông trên hình khai triển.'],
+    ['box','Hình hộp chữ nhật',['Chiều dài a','Chiều rộng b','Chiều cao h'],[6,4,3],'Bật đường chéo để phân biệt đường chéo mặt và đường chéo của hình hộp.'],
+    ['tri-prism','Lăng trụ đứng tam giác',['Cạnh góc vuông a','Cạnh góc vuông b','Chiều cao lăng trụ h'],[3,4,6],'Quan sát hai đáy là tam giác vuông bằng nhau và ba mặt bên hình chữ nhật.'],
+    ['quad-prism','Lăng trụ đứng tứ giác',['Đáy thứ nhất a','Đáy thứ hai b','Chiều cao hình thang t','Chiều cao lăng trụ h'],[8,4,3,5],'So sánh chiều cao t của đáy hình thang cân với chiều cao h giữa hai đáy.']
+  ]],
+  ['Lớp 8',[
+    ['tri-pyramid','Hình chóp tam giác đều',['Cạnh đáy a','Chiều cao h'],[6,4],'Bật đường cao và trung đoạn. Chân đường cao ở tâm đáy, còn chân trung đoạn ở trung điểm một cạnh đáy.'],
+    ['square-pyramid','Hình chóp tứ giác đều',['Cạnh đáy a','Chiều cao h'],[6,4],'So sánh đường cao h với trung đoạn d, rồi tìm bốn tam giác cân trên hình khai triển.']
+  ]],
+  ['Lớp 9',[
+    ['cylinder','Hình trụ',['Bán kính đáy r','Chiều cao h'],[3,5],'Xem mặt cắt qua trục. Đường sinh song song với trục và có độ dài bằng chiều cao.'],
+    ['cone','Hình nón',['Bán kính đáy r','Chiều cao h'],[3,4],'Xem mặt cắt qua trục để thấy bán kính r, chiều cao h và đường sinh ℓ tạo thành tam giác vuông.'],
+    ['sphere','Hình cầu',['Bán kính r'],[3],'Mặt cắt đi qua tâm là hình tròn. Phân biệt diện tích mặt cầu với thể tích khối cầu.']
+  ]],
+  ['Mở rộng',[
+    ['pyramid','Hình chóp đứng đáy chữ nhật',['Chiều dài đáy a','Chiều rộng đáy b','Chiều cao h'],[6,4,5],'So sánh đường cao của hai cặp mặt bên khi chiều dài và chiều rộng đáy khác nhau.']
+  ]]
+];
+
+function solidModel(kind,values) {
+  var [a,b,c,d]=values;
+  var curved=['cylinder','cone','sphere'].includes(kind);
+  var pyramid=['tri-pyramid','square-pyramid','pyramid'].includes(kind);
+  if(curved){
+    return {kind,curved,r:a,h:b,slant:kind==='cone'?Math.hypot(a,b):null,
+      measures:kind==='sphere'?
+        [['Diện tích mặt cầu','4πr²','4 × π × '+fmt(a)+'²',4*Math.PI*a*a,2],
+         ['Thể tích','4/3 × πr³','4/3 × π × '+fmt(a)+'³',4*Math.PI*a**3/3,3]]:
+        [['Diện tích xung quanh',kind==='cone'?'πrℓ':'2πrh',
+          (kind==='cone'?'π × ':'2 × π × ')+fmt(a)+' × '+fmt(kind==='cone'?Math.hypot(a,b):b),
+          Math.PI*a*(kind==='cone'?Math.hypot(a,b):2*b),2],
+         ['Thể tích',kind==='cone'?'πr²h / 3':'πr²h','π × '+fmt(a)+'² × '+fmt(b)+(kind==='cone'?' / 3':''),
+          Math.PI*a*a*b/(kind==='cone'?3:1),3],
+         ['Diện tích toàn phần',kind==='cone'?'Sₓq + πr²':'Sₓq + 2πr²',
+          'π × '+fmt(a)+' × ('+fmt(a)+' + '+fmt(kind==='cone'?Math.hypot(a,b):b)+')'+(kind==='cone'?'':' × 2'),
+          Math.PI*a*(kind==='cone'?a+Math.hypot(a,b):2*(a+b)),2]]
+    };
+  }
+  var base,h;
+  if(kind==='tri-prism') {
+    base=[[0,0],[a,0],[0,b]];
+    h=c;
+  }else if(kind==='quad-prism'){
+    if(a===b)throw Error('Nhập hai đáy khác nhau để khảo sát đáy hình thang cân.');
+    base=[[-a/2,-c/2],[a/2,-c/2],[b/2,c/2],[-b/2,c/2]];
+    h=d;
+  }else if(kind==='tri-pyramid'){
+    base=[[-a/2,-a*Math.sqrt(3)/6],[a/2,-a*Math.sqrt(3)/6],[0,a*Math.sqrt(3)/3]];
+    h=b;
+  }else{
+    var width=['cube','square-pyramid'].includes(kind)?a:b;
+    base=[[-a/2,-width/2],[a/2,-width/2],[a/2,width/2],[-a/2,width/2]];
+    h=kind==='cube'?a:kind==='square-pyramid'?b:c;
+  }
+  var n=base.length;
+  var area=Math.abs(base.reduce((sum,p,i)=>sum+polygonCross(base[0],p,base[(i+1)%n]),0))/2;
+  var edges=base.map((p,i)=>polygonDistance(p,base[(i+1)%n]));
+  var perimeter=edges.reduce((sum,len)=>sum+len,0);
+  var slants=pyramid?base.map((p,i)=>Math.hypot(h,polygonCross(p,base[(i+1)%n],[0,0])/edges[i])):[];
+  var lateral=pyramid?slants.reduce((sum,s,i)=>sum+s*edges[i]/2,0):perimeter*h;
+  var vertices=base.map(p=>[...p,-h/2]).concat(pyramid?[[0,0,h/2]]:base.map(p=>[...p,h/2]));
+  var sideFaces=base.map((p,i)=>pyramid?[i,(i+1)%n,n]:[i,(i+1)%n,(i+1)%n+n,i+n]);
+  var faces=[Array.from({length:n},(_,i)=>n-1-i),...sideFaces];
+  if(!pyramid)faces.push(Array.from({length:n},(_,i)=>n+i));
+  var regular=kind==='tri-pyramid'||kind==='square-pyramid';
+  var lateralFormula=pyramid?(regular?'Pđ × d / 2':'Tổng diện tích các mặt bên'):'Pđ × h';
+  var lateralSub=pyramid?(regular?fmt(perimeter)+' × '+fmt(slants[0])+' / 2':
+    '('+fmt(a)+' × '+fmt(slants[0])+') + ('+fmt(b)+' × '+fmt(slants[1])+')'):
+    fmt(perimeter)+' × '+fmt(h);
+  return {kind,base,h,n,pyramid,slants,edges,vertices,faces,perimeter,area,
+    names:base.map((_,i)=>pointName(i)).concat(pyramid?['S']:base.map((_,i)=>pointName(i)+'′')),
+    measures:[['Diện tích xung quanh',lateralFormula,lateralSub,lateral,2],
+      ['Thể tích',pyramid?'Sđ × h / 3':'Sđ × h',fmt(area)+' × '+fmt(h)+(pyramid?' / 3':''),area*h/(pyramid?3:1),3],
+      ['Diện tích toàn phần',pyramid?'Sₓq + Sđ':'Sₓq + 2Sđ',fmt(lateral)+' + '+(pyramid?'':'2 × ')+fmt(area),
+        lateral+area*(pyramid?1:2),2]]
+  };
+}
+
+function solidProject(vertices,turn,tilt) {
+  var t=turn*radians,u=tilt*radians;
+  function camera([x,y,z]) {
+    var depth=x*Math.sin(t)+y*Math.cos(t);
+    return [x*Math.cos(t)-y*Math.sin(t),z*Math.cos(u)-depth*Math.sin(u),depth*Math.cos(u)+z*Math.sin(u)];
+  }
+  var rotated=vertices.map(camera);
+  var spanX=Math.max(...rotated.map(p=>Math.abs(p[0])));
+  var spanY=Math.max(...rotated.map(p=>Math.abs(p[1])));
+  var scale=Math.min(240/spanX,140/spanY);
+  return {points:rotated.map(([x,y])=>[340+x*scale,195-y*scale]),project:p=>{
+    var [x,y]=camera(p);
+    return [340+x*scale,195-y*scale];
+  }};
+}
+
+function solidLine(a,b,label,css='solid-helper') {
+  var body=suitePath([a,b],css);
+  if(label)body+=suiteText([(a[0]+b[0])/2+9,(a[1]+b[1])/2-7],label);
+  return body;
+}
+
+function solidPolyView(model,turn,tilt,hidden,element) {
+  var {points,project}=solidProject(model.vertices,turn,tilt);
+  var edges=new Map(), seen=new Set(), body='';
+  model.faces.forEach((face,k)=>{
+    var flat=face.map(i=>points[i]);
+    var clockwise=flat.slice(1,-1).reduce((sum,p,i)=>sum+polygonCross(flat[0],p,flat[i+2]),0)>1e-7;
+    if(clockwise){
+      body+=suitePath(flat,k===0||k===model.n+1?'solid-base':'solid-side solid-side-'+k%3,'polygon');
+      face.forEach(i=>seen.add(i));
     }
-    if(kind==='sphere'||kind==='cylinder'||kind==='cone'){
-      var levels=kind==='sphere'?Array.from({length:15},(_,i)=>{
-        var latitude=(i/14-.5)*Math.PI;
-        return ring(a*Math.cos(latitude),a*Math.sin(latitude));
-      }):[ring(a,-h/2),ring(kind==='cone'?0:a,h/2)];
-      levels.forEach((level,i)=>{
-        var start=vertices.length;
-        vertices.push(...level);
-        if(i)level.forEach((p,j)=>{
-          var next=(j+1)%level.length;
-          faces.push([start+j-level.length,start+next-level.length,start+next,start+j]);
-        });
-      });
-      if(kind!=='sphere')faces.push(levels[0].map((p,i)=>i),levels[1].map((p,i)=>i+levels[0].length));
-      var volumes={sphere:4*Math.PI*a**3/3,cylinder:Math.PI*a*a*h,cone:Math.PI*a*a*h/3};
-      var surfaces={sphere:4*Math.PI*a*a,cylinder:2*Math.PI*a*(a+h),cone:Math.PI*a*(a+Math.hypot(a,h))};
-      rows=[['Thể tích',volumes[kind]],['Diện tích toàn phần',surfaces[kind]]];
-    }else{
-      var base=[[-a/2,-b/2],[a/2,-b/2],[a/2,b/2],[-a/2,b/2]];
-      var pyramid=kind==='pyramid';
-      vertices=base.map(p=>[...p,-h/2]).concat(pyramid?[[0,0,h/2]]:base.map(p=>[...p,h/2]));
-      faces=[[0,1,2,3],...base.map((p,i)=>{
-        var next=(i+1)%4;
-        return pyramid?[i,next,4]:[i,next,next+4,i+4];
-      })];
-      if(!pyramid)faces.push([4,5,6,7]);
-      rows=[['Số mặt',faces.length],['Số cạnh',pyramid?8:12],['Số đỉnh',vertices.length],
-        ['Thể tích',a*b*h/(pyramid?3:1)],
-        ['Diện tích toàn phần',pyramid?a*b+a*Math.hypot(h,b/2)+b*Math.hypot(h,a/2):2*(a*b+a*h+b*h)]];
-    }
-    var projected=vertices.map(([x,y,z])=>{
-      var depth=x*Math.sin(turn)+y*Math.cos(turn);
-      return [x*Math.cos(turn)-y*Math.sin(turn),z*Math.cos(tilt)-depth*Math.sin(tilt),depth*Math.cos(tilt)+z*Math.sin(tilt)];
+    face.forEach((i,j)=>{
+      var other=face[(j+1)%face.length];
+      var key=[i,other].sort((a,b)=>a-b).join(':');
+      if(!edges.has(key)||clockwise)edges.set(key,{i,other,visible:clockwise});
     });
-    var scale=145/Math.max(...projected.flatMap(([x,y])=>[Math.abs(x),Math.abs(y)]));
-    var depth=face=>face.reduce((sum,i)=>sum+projected[i][2]/face.length,0);
-    var body=faces.map((face,i)=>({face,i,depth:depth(face)})).sort((a,b)=>a.depth-b.depth)
-      .map(({face,i})=>suitePath(face.map(index=>[340+projected[index][0]*scale,195-projected[index][1]*scale]),
-        (kind==='sphere'||kind==='cylinder'||kind==='cone'?'suite-surface':'suite-face')+' suite-face-'+i%4,'polygon')).join('');
-    return '<h2>'+esc(kinds.find(item=>item[0]===kind)[1])+'</h2>'+suiteGraphic('Mô hình khối hình học nhìn theo góc đã chọn',body)+suiteRows(rows);
-  },{action:'Cập nhật hình',live:true,help:'Đổi góc xoay để quan sát khối. Hình cầu dùng bán kính. Hình trụ và hình nón dùng bán kính và chiều cao.'});
+  });
+  edges.forEach(({i,other,visible})=>{
+    if(visible||hidden)body+=suitePath([points[i],points[other]],visible?'solid-edge':'solid-hidden');
+  });
+  if(element==='height'){
+    var bottom=project([0,0,-model.h/2]),top=project([0,0,model.h/2]);
+    body+=solidLine(bottom,top,'h')+suiteDot(bottom);
+    if(model.pyramid&&model.kind!=='pyramid'){
+      var baseEdge=model.base[0],next=model.base[1];
+      var mid=project([(baseEdge[0]+next[0])/2,(baseEdge[1]+next[1])/2,-model.h/2]);
+      body+=solidLine(top,mid,'d','solid-slant')+suiteDot(mid);
+    }
+  }
+  if(element==='diagonal'){
+    body+=solidLine(points[0],points[2],'AC','solid-slant')+solidLine(points[0],points[model.n+2],'AC′');
+  }
+  points.forEach(([x,y],i)=>{
+    if(hidden||seen.has(i))body+=suiteText([x+Math.sign(x-340)*12,y+Math.sign(y-195)*15],model.names[i]);
+  });
+  return suiteGraphic('Hình chiếu song song của khối đa diện',body);
+}
+
+function solidRoundView(model,turn,tilt,element) {
+  var {r,h,kind}=model;
+  if(kind==='sphere'){
+    var body='<defs><radialGradient id="solid-light" cx="34%" cy="28%" r="72%"><stop stop-color="#e7f6ff"/><stop offset="1" stop-color="#4c8abf"/></radialGradient></defs>'+
+      '<circle cx="340" cy="195" r="140" fill="url(#solid-light)" class="solid-outline"/>';
+    if(element==='radius')body+=solidLine([340,195],[480,195],'r')+suiteDot([340,195])+suiteText([329,214],'O');
+    return suiteGraphic('Hình cầu',body);
+  }
+  var cylinder=kind==='cylinder';
+  function ring(z){
+    return Array.from({length:96},(_,i)=>[r*Math.cos(i*Math.PI/48),r*Math.sin(i*Math.PI/48),z]);
+  }
+  var bottom=ring(-h/2),top=cylinder?ring(h/2):[[0,0,h/2]];
+  var {points,project}=solidProject(bottom.concat(top),turn,tilt);
+  var sorted=points.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+  function hull(list){
+    var path=[];
+    list.forEach(p=>{
+      while(path.length>1&&polygonCross(path.at(-2),path.at(-1),p)<=0)path.pop();
+      path.push(p);
+    });
+    return path.slice(0,-1);
+  }
+  var body=suitePath(hull(sorted).concat(hull(sorted.slice().reverse())),'solid-rounded','polygon');
+  if(cylinder&&tilt>0)body+=suitePath(top.map(project),'solid-base solid-outline','polygon');
+  if(tilt<0)body+=suitePath(bottom.map(project),'solid-base solid-outline','polygon');
+  var front=Array.from({length:49},(_,i)=>{
+    var angle=-turn*radians+i*Math.PI/48;
+    return [r*Math.cos(angle),r*Math.sin(angle),tilt<0&&cylinder?h/2:-h/2];
+  });
+  if(cylinder||tilt>=0)body+=suitePath(front.map(project),'solid-edge');
+  if(element==='radius'){
+    var O=project([0,0,-h/2]),H=project([0,0,h/2]);
+    var rim=project([r*Math.cos(turn*radians),-r*Math.sin(turn*radians),-h/2]);
+    body+=solidLine(O,rim,'r')+solidLine(O,H,'h')+suiteDot(O);
+    if(!cylinder)body+=solidLine(H,rim,'ℓ','solid-slant');
+  }
+  return suiteGraphic(cylinder?'Hình trụ với hai đáy tròn':'Hình nón với đáy tròn và đỉnh',body);
+}
+
+function solidFlatView(model,section=false) {
+  var polygons=[], circles=[], sectors=[], guides=[];
+  var {kind,r,h}=model;
+  if(section){
+    if(kind==='sphere')circles.push([[0,0],r]);
+    else polygons.push({points:kind==='cone'?[[-r,0],[r,0],[0,h]]:[[-r,0],[r,0],[r,h],[-r,h]]});
+    var origin=[0,0];
+    guides.push([origin,[r,0],'r']);
+    if(kind!=='sphere')guides.push([origin,[0,h],'h']);
+    if(kind==='cone')guides.push([[0,h],[r,0],'ℓ']);
+  }else if(kind==='cylinder'){
+    var width=2*Math.PI*r;
+    polygons.push({points:[[0,0],[width,0],[width,h],[0,h]],label:'Mặt xung quanh'});
+    circles.push([[width/2,-r],r,'Đáy 1'],[[width/2,h+r],r,'Đáy 2']);
+    guides.push([[0,0],[width,0],'2πr']);
+  }else if(kind==='cone'){
+    var slant=model.slant, angle=2*Math.PI*r/slant;
+    var start=-Math.PI/2-angle/2;
+    sectors.push([slant,start,angle]);
+    circles.push([[0,-slant-r],r,'Đáy']);
+    guides.push([[0,0],[0,-slant],'ℓ']);
+  }else if(model.pyramid){
+    polygons.push({points:model.base,label:'Đáy'});
+    model.base.forEach((point,i)=>{
+      var next=model.base[(i+1)%model.n], dx=next[0]-point[0],dy=next[1]-point[1];
+      var k=model.slants[i]/model.edges[i];
+      polygons.push({points:[point,next,[(point[0]+next[0])/2+dy*k,(point[1]+next[1])/2-dx*k]],label:'Bên '+(i+1)});
+    });
+  }else{
+    var offset=0;
+    model.edges.forEach((edge,i)=>{
+      polygons.push({points:[[offset,0],[offset+edge,0],[offset+edge,h],[offset,h]],label:'Bên '+(i+1)});
+      offset+=edge;
+    });
+    var [ax,ay]=model.base[0];
+    polygons.push({points:model.base.map(([x,y])=>[x-ax,ay-y]),label:'Đáy 1'},
+      {points:model.base.map(([x,y])=>[x-ax,h+y-ay]),label:'Đáy 2'});
+  }
+  var bounds=polygons.flatMap(item=>item.points);
+  circles.forEach(([[x,y],radius])=>bounds.push([x-radius,y-radius],[x+radius,y+radius]));
+  sectors.forEach(([radius,start,angle])=>{
+    bounds.push([0,0]);
+    var extrema=[start,start+angle];
+    for(var k=-4;k<=4;k++){
+      var theta=k*Math.PI/2;
+      if(theta>start&&theta<start+angle)extrema.push(theta);
+    }
+    extrema.forEach(theta=>bounds.push([radius*Math.cos(theta),radius*Math.sin(theta)]));
+  });
+  var xs=bounds.map(p=>p[0]),ys=bounds.map(p=>p[1]);
+  var loX=Math.min(...xs),hiX=Math.max(...xs),loY=Math.min(...ys),hiY=Math.max(...ys);
+  var scale=Math.min(555/(hiX-loX),303/(hiY-loY));
+  var project=([x,y])=>[340+(x-(loX+hiX)/2)*scale,195-(y-(loY+hiY)/2)*scale];
+  var body=polygons.map(({points,label})=>{
+    var center=points.reduce(([x,y],p)=>[x+p[0]/points.length,y+p[1]/points.length],[0,0]);
+    return suitePath(points.map(project),label?.startsWith('Đáy')?'solid-base solid-outline':'solid-side solid-outline','polygon')+
+      (label?suiteText(project(center),label):'');
+  }).join('');
+  circles.forEach(([center,radius,label])=>{
+    var [x,y]=project(center);
+    body+='<circle class="solid-base solid-outline" cx="'+x+'" cy="'+y+'" r="'+radius*scale+'"/>';
+    if(label)body+=suiteText([x,y],label);
+  });
+  sectors.forEach(([radius,start,angle])=>{
+    var end=start+angle,o=project([0,0]),a=project([radius*Math.cos(start),radius*Math.sin(start)]),
+      b=project([radius*Math.cos(end),radius*Math.sin(end)]);
+    body+='<path class="solid-side solid-outline" d="M '+o.join(' ')+' L '+a.join(' ')+' A '+radius*scale+' '+radius*scale+' 0 '+
+      (angle>Math.PI?1:0)+' 0 '+b.join(' ')+' Z"/>';
+  });
+  guides.forEach(([a,b,label])=>{body+=solidLine(project(a),project(b),label);});
+  if(section){
+    var [ox,oy]=project([0,0]);
+    if(kind!=='sphere'){
+      var size=Math.min(13,r*scale/4,h*scale/4);
+      body+=suitePath([[ox,oy-size],[ox+size,oy-size],[ox+size,oy]],'solid-edge');
+    }
+    body+=suiteDot([ox,oy])+suiteText([ox-12,oy+17],'O');
+  }
+  return suiteGraphic(section?'Mặt cắt qua trục hoặc qua tâm':'Hình khai triển của khối',body);
+}
+
+function suiteSolid(host) {
+  var choices=Object.fromEntries(solidFamilies.flatMap(([grade,entries])=>entries.map(spec=>[spec[0],spec])));
+  var picker='<label class="suite-field suite-wide">Chọn hình khối<select id="solid-kind" name="kind">'+solidFamilies.map(([grade,entries])=>
+    '<optgroup label="'+grade+'">'+entries.map(([key,label])=>'<option value="'+key+'">'+label+'</option>').join('')+'</optgroup>').join('')+'</select></label>';
+  host.innerHTML='<div class="math-board suite-workbench solid-workbench"><form class="panel suite-controls"><h2>Hình khối và kích thước</h2>'+
+    '<div class="fields">'+picker+suiteFields([['unit','Đơn vị nhập',[['cm','cm'],['dm','dm'],['m','m']]]])+'</div>'+
+    '<div id="solid-dimensions" class="fields"></div><p class="calc-note" id="solid-activity"></p>'+
+    '<button class="btn outline" type="button" data-suite-example>Nạp ví dụ</button></form>'+
+    '<section class="panel suite-output"><h2 id="solid-title"></h2>'+
+      '<div class="board-actions" role="group" aria-label="Cách biểu diễn">'+
+      '<button class="btn outline" type="button" data-solid-view="model">Mô hình 3D</button>'+
+      '<button class="btn outline" type="button" data-solid-view="net">Khai triển</button>'+
+      '<button class="btn outline" type="button" data-solid-view="section">Mặt cắt</button></div>'+
+      '<div id="solid-stage"></div><p id="solid-caption" class="calc-note"></p>'+
+      '<div id="solid-camera"><div class="fields">'+suiteFields([
+        ['turn','Xoay ngang',32,-180,180,1,'range'],['tilt','Góc nâng',23,-85,85,1,'range']])+
+      '<label class="solid-checkbox"><input id="solid-hidden" type="checkbox" checked> Hiện cạnh khuất</label>'+
+      '<label class="suite-field">Đường minh họa<select id="solid-element"></select></label></div></div>'+
+      '<div id="solid-results" aria-live="polite"></div></section></div>';
+  var form=host.querySelector('form'),select=form.elements.kind,unit=form.elements.unit;
+  var dims=host.querySelector('#solid-dimensions'),stage=host.querySelector('#solid-stage'),results=host.querySelector('#solid-results');
+  var turn=host.querySelector('#suite-turn'),tilt=host.querySelector('#suite-tilt');
+  var hidden=host.querySelector('#solid-hidden'),element=host.querySelector('#solid-element');
+  var view='model',model,drag;
+  var elementChoices={
+    cube:[['height','Chiều cao'],['diagonal','Đường chéo']],
+    box:[['height','Chiều cao'],['diagonal','Đường chéo']],
+    'tri-prism':[['height','Chiều cao lăng trụ']],
+    'quad-prism':[['height','Chiều cao lăng trụ']],
+    'tri-pyramid':[['height','Đường cao và trung đoạn']],
+    'square-pyramid':[['height','Đường cao và trung đoạn']],
+    pyramid:[['height','Đường cao']],
+    cylinder:[['radius','Bán kính và chiều cao']],
+    cone:[['radius','Bán kính, chiều cao và đường sinh']],
+    sphere:[['radius','Tâm và bán kính']]
+  };
+  function draw(){
+    var sphere=select.value==='sphere';
+    stage.classList.toggle('solid-rotatable',view==='model'&&!!model&&!sphere);
+    host.querySelector('#solid-camera').hidden=view!=='model';
+    [turn,tilt].forEach(input=>{
+      input.closest('label').hidden=sphere;
+      input.previousElementSibling.value=input.value+'°';
+    });
+    hidden.closest('label').hidden=model?.curved;
+    host.querySelectorAll('[data-solid-view]').forEach(button=>{
+      button.hidden=button.dataset.solidView==='net'&&sphere||
+        button.dataset.solidView==='section'&&!['cylinder','cone','sphere'].includes(select.value);
+      button.setAttribute('aria-pressed',String(button.dataset.solidView===view));
+    });
+    var caption=host.querySelector('#solid-caption');
+    if(!model){stage.innerHTML='';caption.textContent='';return;}
+    if(view==='net'){
+      stage.innerHTML=solidFlatView(model);
+      caption.textContent=model.curved?(model.kind==='cone'?'Cung hình quạt dài 2πr, bằng chu vi đáy.':'Chiều dài hình chữ nhật bằng chu vi đáy 2πr.'):
+        'Màu xanh đậm chỉ mặt đáy. Các mặt kề nhau trên hình khai triển có cạnh chung bằng nhau.';
+    }else if(view==='section'){
+      stage.innerHTML=solidFlatView(model,true);
+      caption.textContent=model.kind==='sphere'?'Mặt phẳng đi qua tâm cắt khối cầu theo một hình tròn bán kính r.':
+        model.kind==='cone'?'Mặt cắt qua trục là tam giác cân. Đường cao h chia tam giác thành hai tam giác vuông.':
+        'Mặt cắt qua trục là hình chữ nhật có hai kích thước 2r và h.';
+    }else{
+      stage.innerHTML=model.curved?solidRoundView(model,+turn.value,+tilt.value,element.value):
+        solidPolyView(model,+turn.value,+tilt.value,hidden.checked,element.value);
+      caption.textContent=model.curved?(sphere?'Hình cầu có cùng đường bao tròn theo mọi hướng nhìn.':
+        'Kéo để xoay. Đường tròn đáy có thể hiện thành elip khi đổi góc nhìn.'):
+        'Kéo để xoay. Nét đứt chỉ cạnh khuất. Số đo của khối được giữ khi đổi góc nhìn.';
+    }
+  }
+  function calculate(){
+    var lengthUnit=unit.value;
+    try{
+      var inputs=Array.from(dims.querySelectorAll('input'),input=>numeric(input.value,input.labels[0].textContent));
+      if(inputs.some(value=>value<=0||value<.01||value>10000))throw Error('Nhập các kích thước từ 0,01 đến 10.000 '+lengthUnit+'.');
+      model=solidModel(select.value,inputs);
+      var counts=model.curved?[]:[['Số mặt',model.faces.length],['Số cạnh',model.n*(model.pyramid?2:3)],['Số đỉnh',model.vertices.length]];
+      var readings=model.curved?[
+        ['Bán kính',fmt(model.r)+' '+lengthUnit],
+        ...(model.kind==='sphere'?[]:[['Chiều cao',fmt(model.h)+' '+lengthUnit]]),
+        ...(model.slant?[['Đường sinh',fmt(model.slant)+' '+lengthUnit]]:[])
+      ]:[...counts,['Diện tích đáy Sđ',fmt(model.area)+' '+lengthUnit+'²'],
+        ['Chu vi đáy Pđ',fmt(model.perimeter)+' '+lengthUnit],
+        ...(model.pyramid&&model.kind!=='pyramid'?[['Trung đoạn d',fmt(model.slants[0])+' '+lengthUnit]]:[]),
+        ...(['cube','box'].includes(model.kind)?[['Đường chéo mặt đáy AC',fmt(Math.hypot(inputs[0],model.kind==='cube'?inputs[0]:inputs[1]))+' '+lengthUnit],
+          ['Đường chéo khối AC′',fmt(Math.hypot(inputs[0],model.kind==='cube'?inputs[0]:inputs[1],model.h))+' '+lengthUnit]]:[])];
+      results.innerHTML=suiteRows(readings)+'<h3>Công thức và thế số</h3>'+
+        suiteTable(['Đại lượng','Công thức','Thế số','Kết quả'],model.measures.map(([name,formula,sub,value,power])=>
+          [name,formula,sub,(Number(value.toPrecision(7))===value?'':'≈ ')+fmt(Number(value.toPrecision(7)))+' '+lengthUnit+(power===2?'²':'³')]));
+    }catch(error){
+      model=null;
+      results.innerHTML='<p class="board-error" role="alert">'+esc(error.message)+'</p>';
+    }
+    draw();
+  }
+  function loadExample(){
+    var [kind,name,labels,defaults,activity]=choices[select.value];
+    host.querySelector('#solid-title').textContent=name;
+    host.querySelector('#solid-activity').textContent=activity;
+    dims.innerHTML=suiteFields(labels.map((label,i)=>['solid-'+i,label,defaults[i],.01,10000]));
+    element.innerHTML=[['none','Không hiện'],...elementChoices[kind]].map(([id,label])=>'<option value="'+id+'">'+label+'</option>').join('');
+    view='model';
+    turn.value=32;tilt.value=23;hidden.checked=true;
+    calculate();
+  }
+  select.addEventListener('change',loadExample);
+  form.querySelector('[data-suite-example]').addEventListener('click',loadExample);
+  form.addEventListener('submit',event=>{event.preventDefault();calculate();});
+  form.addEventListener('input',event=>{if(dims.contains(event.target))calculate();});
+  unit.addEventListener('change',calculate);
+  [turn,tilt].forEach(input=>input.addEventListener('input',draw));
+  [hidden,element].forEach(input=>input.addEventListener('change',draw));
+  stage.addEventListener('pointerdown',event=>{
+    if(!event.isPrimary||event.button!==0||!stage.classList.contains('solid-rotatable'))return;
+    drag={id:event.pointerId,x:event.clientX,y:event.clientY,turn:+turn.value,tilt:+tilt.value};
+    stage.setPointerCapture(event.pointerId);
+  });
+  stage.addEventListener('pointermove',event=>{
+    if(!drag||event.pointerId!==drag.id)return;
+    var angle=drag.turn+(event.clientX-drag.x)*.7;
+    turn.value=((angle+180)%360+360)%360-180;
+    tilt.value=Math.max(-85,Math.min(85,drag.tilt+(event.clientY-drag.y)*.55));
+    draw();
+  });
+  stage.addEventListener('lostpointercapture',()=>{drag=null;});
+  host.querySelectorAll('[data-solid-view]').forEach(button=>button.addEventListener('click',()=>{
+    view=button.dataset.solidView;
+    draw();
+  }));
+  loadExample();
 }
 
 function originalPage(){
@@ -1609,7 +1943,7 @@ function originalPage(){
   app.innerHTML='<div class="original-heading"><div class="page-title"><h1>'+esc(tool.name)+'</h1></div>'+
     '<div class="filter-bar"><button class="btn outline" type="button" data-original-suite="'+esc(tool.suite.base)+'">← '+esc(tool.suite.label)+'</button>'+
     filterSelect('original-tool-select','Trong bộ công cụ',related.map(item=>[item.id,item.name]),tool.id)+'</div></div>'+
-    exampleCard(originalExamples[tool.id],'Thử với ví dụ này',true)+
+    (tool.id==='hinh-hoc-3d'?'':exampleCard(originalExamples[tool.id],'Thử với ví dụ này',true))+
     '<div id="original-content"></div>';
   var host=document.getElementById('original-content');
   var id=tool.id.split('/').at(-1);
