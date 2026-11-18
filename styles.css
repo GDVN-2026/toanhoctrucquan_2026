@@ -451,15 +451,27 @@ a.btn { display: inline-flex; align-items: center; text-decoration: none; }
 .board-dot { fill: var(--blue); }
 .board-angle { stroke: #e36073; fill: none; stroke-width: 2px; }
 .board-radius { stroke: var(--blue); stroke-dasharray: 6 4; }
-.board-cut-line, .board-cut-inside { stroke: #8b3ca7; stroke-width: 2; }
+.board-cut-line, .board-cut-inside { stroke: var(--cut-color,#8b3ca7); stroke-width: 2; }
 .board-cut-line { stroke-dasharray: 7 5; }
 .board-cut-inside { stroke-width: 3; }
-.board-cut-dot { fill: #8b3ca7; }
-.dark :is(.board-cut-line,.board-cut-inside) { stroke: #e2a3fb; }
-.dark .board-cut-dot { fill: #e2a3fb; }
-#construction-svg .board-cut-label { fill: #6f278a; }
-.dark #construction-svg .board-cut-label { fill: #e2a3fb; }
-.board-cut-reading { margin: 8px 0; color: var(--ink); font-size: .92rem; }
+.board-cut-dot, #construction-svg .board-cut-label { fill: var(--cut-color,#8b3ca7); }
+.dark .board-cut-dot { fill: var(--cut-color,#e2a3fb); }
+.board-cut-color-0 { --cut-color: #8b3ca7; }
+.board-cut-color-1 { --cut-color: #00746b; }
+.board-cut-color-2 { --cut-color: #9d470c; }
+.board-cut-color-3 { --cut-color: #a33463; }
+.dark .board-cut-color-0 { --cut-color: #e2a3fb; }
+.dark .board-cut-color-1 { --cut-color: #80ebd9; }
+.dark .board-cut-color-2 { --cut-color: #ffc58d; }
+.dark .board-cut-color-3 { --cut-color: #ffa8cb; }
+.board-cut-results { display: grid; gap: 5px; list-style: none; margin: 8px 0; padding: 0; }
+.board-cut-reading {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  border-inline-start: 3px solid var(--cut-color); padding-inline-start: 8px;
+  color: var(--ink); font-size: .92rem; overflow-wrap: anywhere;
+}
+.board-cut-reading strong { margin-inline-end: 4px; color: var(--cut-color); }
+.board-cut-reading button { flex: none; }
 #board-edit-form, #board-cut-input { margin: 0 0 10px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; }
 #board-cut-input summary { cursor: pointer; color: var(--blue); }
 #board-edit-form label { display: grid; gap: 4px; min-width: 0; }

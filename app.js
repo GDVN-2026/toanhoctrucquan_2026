@@ -2628,7 +2628,7 @@ var constructionTypes = {
 };
 var constructionState = {
   mode:'dimensions', type:'sss', points:[], closed:false, drafts:{}, names:[], unit:'đv', formula:'', shape:null, message:'',
-  cut:null, lastPoints:null
+  cuts:[], nextCutId:1, nextCutPoint:1, lastPoints:null
 };
 var numberWorkspaceTool = 'fraction';
 var radians = Math.PI / 180;
@@ -2846,7 +2846,7 @@ function constructionPage() {
     var labels = names();
     var line = screen.map(p=>p.join(',')).join(' ');
     gridStep=scale===32?1:10**Math.floor(Math.log10(48/scale));
-    var showAxes=model.mode==='points'||placingCut||Boolean(model.cut);
+    var showAxes=model.mode==='points'||placingCut||model.cuts.length>0;
     var spacing=showAxes?gridStep*scale:32;
     var [axisX,axisY]=project([0,0]);
     var gridX=showAxes?(axisX%spacing+spacing)%spacing:0;
@@ -2885,16 +2885,23 @@ function constructionPage() {
         parts.push('<text class="board-length" text-anchor="middle" x="'+mx+'" y="'+(my+4)+'">'+fmt(Math.round(shape.edges[i]*100)/100)+'</text>');
       });
     }
-    if (model.cut&&shape) {
-      var crosses=model.cut.points.map(project);
+    var cutLabels=[];
+    model.cuts.forEach(cut=>{
+      var crosses=cut.points.map(project);
       var a=crosses[0], b=crosses.at(-1);
       var d=polygonDistance(a,b),dx=(b[0]-a[0])*800/d,dy=(b[1]-a[1])*800/d;
       var cutLine=(p,q,css)=>'<line class="'+css+'" x1="'+p[0]+'" y1="'+p[1]+'" x2="'+q[0]+'" y2="'+q[1]+'"/>';
+      parts.push('<g class="board-cut-color-'+(cut.id-1)%4+'" data-cut-line="'+cut.id+'">');
       parts.push(cutLine([a[0]-dx,a[1]-dy],[b[0]+dx,b[1]+dy],'board-cut-line'));
-      model.cut.intervals.forEach(([i,j])=>parts.push(cutLine(crosses[i],crosses[j],'board-cut-inside')));
-      crosses.forEach(([x,y],i)=>parts.push('<circle class="board-cut-dot" cx="'+x+'" cy="'+y+'" r="4"/>'+
-        '<text class="board-cut-label" x="'+(x+7)+'" y="'+(y-10)+'">'+intersectionName(i)+'</text>'));
-    }
+      cut.intervals.forEach(([i,j])=>parts.push(cutLine(crosses[i],crosses[j],'board-cut-inside')));
+      crosses.forEach(([x,y],i)=>{
+        var stacked=cutLabels.filter(p=>polygonDistance(p,[x,y])<12).length;
+        cutLabels.push([x,y]);
+        parts.push('<circle class="board-cut-dot" cx="'+x+'" cy="'+y+'" r="4"/>'+
+          '<text class="board-cut-label" x="'+(x+7)+'" y="'+(y-10-stacked*15)+'">'+intersectionName(cut.firstPoint+i)+'</text>');
+      });
+      parts.push('</g>');
+    });
     if(pendingCut){
       var [px,py]=project(pendingCut);
       parts.push('<circle class="board-cut-dot" cx="'+px+'" cy="'+py+'" r="5"/>');
@@ -2902,17 +2909,27 @@ function constructionPage() {
     svg.classList.toggle('board-cut-mode',placingCut);
     svg.innerHTML = parts.join('');
     svg.setAttribute('aria-label',shape?currentLabels():'Bảng vẽ hình học');
-    cutResult.innerHTML=model.cut?'<p class="board-cut-reading"><strong>Đoạn trong hình</strong> '+
-      model.cut.intervals.map(([i,j],index)=>intersectionName(i)+intersectionName(j)+' = '+fmt(model.cut.lengths[index])+' '+esc(model.unit)).join(' · ')+'</p>':'';
   }
-  function intersectionName(i) { return 'G'+String(i+1).replace(/\d/g,d=>String.fromCharCode(8320+Number(d))); }
+  function intersectionName(i) { return 'G'+String(i).replace(/\d/g,d=>String.fromCharCode(8320+Number(d))); }
+  function renderCutResults() {
+    cutResult.innerHTML=model.cuts.length?'<ul class="board-cut-results" aria-label="Các đường cắt">'+model.cuts.map(cut=>
+      '<li class="board-cut-reading board-cut-color-'+(cut.id-1)%4+'"><div><strong>Đường cắt '+cut.id+'</strong> '+
+      cut.intervals.map(([i,j],index)=>intersectionName(cut.firstPoint+i)+intersectionName(cut.firstPoint+j)+' = '+
+        fmt(cut.lengths[index])+' '+esc(model.unit)).join(' · ')+
+      '</div><button type="button" class="btn outline" data-remove-cut="'+cut.id+'" aria-label="Xóa đường cắt '+cut.id+'">Xóa</button></li>').join('')+'</ul>':'';
+  }
+  function clearCuts() {
+    model.cuts=[];
+    model.nextCutId=1;
+    model.nextCutPoint=1;
+  }
   function renderGeometryActions() {
     var shape=model.shape;
     if(!shape){geometryActions.innerHTML='';return;}
     var editable=model.mode==='points'&&model.closed;
     geometryActions.innerHTML='<div class="board-actions">'+
       '<button class="btn outline" type="button" id="board-cut-toggle" aria-pressed="false">Đường cắt</button>'+
-      '<button class="btn outline" type="button" id="board-cut-clear" '+(model.cut?'':'hidden')+'>Xóa đường cắt</button>'+
+      '<button class="btn outline" type="button" id="board-cut-clear" '+(model.cuts.length?'':'hidden')+'>Xóa tất cả đường cắt</button>'+
       (editable?'<button class="btn outline" type="button" id="board-edit-toggle" aria-expanded="false">Đặt số đo</button>':'')+
       (editable&&model.lastPoints?'<button class="btn outline" type="button" id="board-restore-measures">Khôi phục hình trước</button>':'')+
     '</div><details id="board-cut-input" hidden><summary>Nhập tọa độ hai điểm</summary>'+
@@ -2924,18 +2941,27 @@ function constructionPage() {
   }
   function stageCut(first,second) {
     try{
-      model.cut=cutConstruction(model.shape,first,second);
-      placingCut=false;
-      geometryActions.querySelector('#board-cut-toggle').setAttribute('aria-pressed','false');
+      var cut=cutConstruction(model.shape,first,second);
+      var a=cut.points[0],b=cut.points.at(-1);
+      var length=polygonDistance(a,b);
+      var size=model.shape.r||Math.max(...model.shape.edges);
+      if(model.cuts.some(other=>[other.points[0],other.points.at(-1)].every(p=>
+        Math.abs(polygonCross(a,b,p))/length<=size*1e-9))){
+        throw Error('Đường thẳng này đã có trên bảng.');
+      }
+      cut.id=model.nextCutId++;
+      cut.firstPoint=model.nextCutPoint;
+      model.nextCutPoint+=cut.points.length;
+      model.cuts.push(cut);
       geometryActions.querySelector('#board-cut-clear').hidden=false;
-      geometryActions.querySelector('#board-cut-input').hidden=true;
-      model.message='';
+      model.message='Đã thêm đường cắt '+cut.id+'. Chọn tiếp hai điểm hoặc bấm Dừng vẽ.';
+      renderCutResults();
     }catch(error){model.message=error.message+' Chọn lại hai điểm.';}
     pendingCut=null;
     updateDrawing();
   }
   function cutHint() {
-    model.message=pendingCut?'Bấm điểm thứ hai để xác định đường thẳng.':'Bấm hai điểm trên bảng để xác định đường thẳng. Có thể chọn cả điểm ngoài hình.';
+    model.message=pendingCut?'Bấm điểm thứ hai để xác định đường thẳng.':'Bấm hai điểm trên bảng để thêm một đường cắt. Có thể chọn cả điểm ngoài hình.';
   }
   function renderMeasureFields(form) {
     var shape=model.shape, labels=names();
@@ -2982,11 +3008,12 @@ function constructionPage() {
     var old=model.shape;
     var same=shape&&old&&shape.kind===old.kind&&shape.r===old.r&&shape.points.length===old.points.length&&
       shape.points.every(([x,y],i)=>x===old.points[i][0]&&y===old.points[i][1]);
-    if(!same)model.cut=null;
+    if(!same)clearCuts();
     pendingCut=null;
     placingCut=false;
     model.shape=shape;
     renderGeometryActions();
+    renderCutResults();
     updateDrawing();
     updateMeasures();
     updateCalculation();
@@ -3094,7 +3121,6 @@ function constructionPage() {
     if(form.id==='board-cut-form'){
       var coords=data.getAll('coord').map(Number);
       stageCut(coords.slice(0,2),coords.slice(2));
-      if(!placingCut)geometryActions.querySelector('#board-cut-toggle').focus();
       return;
     }
     try{
@@ -3141,6 +3167,7 @@ function constructionPage() {
       }
       model.names[i]=name;
     } else return;
+    renderCutResults();
     if(placingCut)cutHint();
     else model.message='';
     updateDrawing();
@@ -3158,13 +3185,16 @@ function constructionPage() {
       placingCut=!placingCut;
       pendingCut=null;
       button.setAttribute('aria-pressed',String(placingCut));
+      button.textContent=placingCut?'Dừng vẽ':'Đường cắt';
       geometryActions.querySelector('#board-cut-input').hidden=!placingCut;
       if(placingCut)cutHint();
       else model.message='';
       updateDrawing();
-    } else if (button.id==='board-cut-clear') {
-      model.cut=null;
-      button.hidden=true;
+    } else if (button.id==='board-cut-clear'||button.dataset.removeCut) {
+      if(button.id==='board-cut-clear')clearCuts();
+      else model.cuts=model.cuts.filter(cut=>cut.id!==Number(button.dataset.removeCut));
+      geometryActions.querySelector('#board-cut-clear').hidden=!model.cuts.length;
+      renderCutResults();
       if(placingCut)cutHint();
       else model.message='';
       updateDrawing();
