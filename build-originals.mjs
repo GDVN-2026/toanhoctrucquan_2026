@@ -67,8 +67,12 @@ for (const dir of ['static/js','static/css']) {
     if (!/\.chunk\.(?:js|css)$/.test(entry)) continue;
     const path = join(destination,dir,entry);
     const source = readFileSync(path,'utf8');
-    const output = removeLegacyStorageTimer(entry.endsWith('.js')?relocateScriptAssets(source):source)
+    let output = removeLegacyStorageTimer(entry.endsWith('.js')?relocateScriptAssets(source):source)
       .replace(/\/\*# sourceMappingURL=[^*]*\*\/|\r?\n\/\/# sourceMappingURL=[^\n]*/g,'');
+    if(entry.startsWith('14.')&&entry.endsWith('.chunk.js')){
+      output = substitute(output,'e.appletOnLoad=S,new window.GGBApplet(e,!0).inject(o)',
+        'e.appletOnLoad=S,window.MathLabOriginal.configureApplet(o,e),new window.GGBApplet(e,!0).inject(o)');
+    }
     if (output !== source) writeFileSync(path,output,'utf8');
   }
 }

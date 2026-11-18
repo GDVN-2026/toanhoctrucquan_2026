@@ -967,7 +967,7 @@ function exampleCard(sample,heading='Ví dụ có lời giải',activity=false){
 document.getElementById('pinned-suites-nav').innerHTML=originalSuites.map(suite=>
   '<button type="button" data-original-suite="'+suite.base+'"><span aria-hidden="true">'+suite.icon+'</span>'+esc(suite.label)+'</button>').join('');
 function suiteInMode(suite){return inMode(Boolean(suite.geometry));}
-var originalAssets, originalRelease, originalMounted;
+var originalAssets, originalRelease, originalMounted, releaseOriginalApplet;
 function createOriginalHistory(format,parse){
   var items=[],index=-1,action='POP',listener,key=0;
   function record(to,state){
@@ -989,9 +989,50 @@ function createOriginalHistory(format,parse){
   };
 }
 function servedMathLab(){return ['http:','https:'].includes(location.protocol);}
+function configureOriginalApplet(id,options){
+  var holder=document.getElementById(id)?.parentElement;
+  if(!holder?.closest('.mathlab-original'))return;
+  releaseOriginalApplet?.();
+  var observer,resizeFrame,disposed=false,onLoad=options.appletOnLoad;
+  var measure=()=>Math.max(560,holder.clientWidth);
+  var width=Number(options.width)||1200,height=Number(options.height)||600;
+  releaseOriginalApplet=()=>{disposed=true;observer?.disconnect();cancelAnimationFrame(resizeFrame);};
+  Object.assign(options,{disableAutoScale:true,scale:1});
+  options.appletOnLoad=api=>{
+    onLoad?.(api);
+    if(disposed||!holder.isConnected||typeof api?.setSize!=='function')return;
+    function view(){
+      var properties=api.getViewProperties?.(1);
+      return typeof properties==='string'?JSON.parse(properties):properties;
+    }
+    function resize(){
+      var next=measure();
+      if(next===width)return;
+      var before=view();
+      width=next;
+      api.setSize(width,height);
+      var scaler=holder.querySelector('.applet_scaler');
+      if(scaler)scaler.style.width=width+'px';
+      cancelAnimationFrame(resizeFrame);
+      resizeFrame=requestAnimationFrame(()=>{
+        var after=view();
+        if(disposed||!before?.width||!before.height||!after?.width||!after.height)return;
+        // Preserve the center and visible extent of the original construction.
+        var oldWidth=before.width*before.invXscale,oldHeight=before.height*before.invYscale;
+        var stretch=Math.max(oldWidth/after.width,oldHeight/after.height);
+        var x=before.xMin+oldWidth/2,y=before.yMin+oldHeight/2;
+        var dx=after.width*stretch/2,dy=after.height*stretch/2;
+        if([x,y,dx,dy].every(Number.isFinite)&&dx>0&&dy>0)api.setCoordSystem(x-dx,x+dx,y-dy,y+dy);
+      });
+    }
+    resize();
+    observer=new ResizeObserver(resize);
+    observer.observe(holder);
+  };
+}
 function loadOriginalModule(){
   if(originalAssets)return originalAssets;
-  window.MathLabOriginal={createHistory:createOriginalHistory};
+  window.MathLabOriginal={createHistory:createOriginalHistory,configureApplet:configureOriginalApplet};
   [
     './toan-goc/static/css/main.e8ebd773.css',
     './toan-goc/fonts/index.css',
@@ -1003,7 +1044,7 @@ function loadOriginalModule(){
   });
   originalAssets=new Promise((resolve,reject)=>{
     var script=document.createElement('script');
-    script.src='./toan-goc/static/js/main.d89350d1.js?tool=3';
+    script.src='./toan-goc/static/js/main.d89350d1.js?tool=4';
     script.onload=()=>typeof window.MathLabOriginal.mount==='function'?resolve():reject(Error('Giao diện gốc chưa sẵn sàng.'));
     script.onerror=()=>{script.remove();reject(Error('Không tải được giao diện gốc.'));};
     document.head.append(script);
@@ -1012,6 +1053,8 @@ function loadOriginalModule(){
 }
 function releaseOriginalModule(){
   if(!originalMounted)return;
+  releaseOriginalApplet?.();
+  releaseOriginalApplet=null;
   originalRelease?.();
   document.title=originalMounted.title;
   originalMounted=null;
