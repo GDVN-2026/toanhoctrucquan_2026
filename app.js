@@ -666,6 +666,11 @@ var tools=[
 var state={page:'home',mode:'number',suite:'',cat:'all',query:'',tool:'',favs:[]};
 try{state.favs=JSON.parse(localStorage.getItem('mathlab-favs-v1')||'[]');if(!Array.isArray(state.favs))state.favs=[];}catch(e){state.favs=[];}
 try{if(localStorage.getItem('gdvn-math-mode')==='geometry')state.mode='geometry';}catch(e){}
+if(new URLSearchParams(location.search).get('tool')==='spatial'){
+  state.mode='geometry';
+  state.page='original';
+  state.suite='hinh-hoc-3d';
+}
 var app=document.getElementById('app'),search=document.getElementById('search-input');
 function esc(s){return String(s===undefined?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function fmt(n){if(typeof n==='string')return n;if(!Number.isFinite(n))return 'Không xác định';if(n!==0&&(Math.abs(n)>=1e13||Math.abs(n)<1e-8))return n.toExponential(7);return new Intl.NumberFormat('vi-VN',{maximumFractionDigits:9}).format(Number(n.toPrecision(12)));}
@@ -961,6 +966,14 @@ function exampleCard(sample,heading='Ví dụ có lời giải',activity=false){
 document.getElementById('pinned-suites-nav').innerHTML=originalSuites.map(suite=>
   '<button type="button" data-original-suite="'+suite.base+'"><span aria-hidden="true">'+suite.icon+'</span>'+esc(suite.label)+'</button>').join('');
 function suiteInMode(suite){return inMode(Boolean(suite.geometry));}
+function openOriginalSuite(suite,toolId=''){
+  if(!['http:','https:'].includes(location.protocol))return false;
+  var target=new URL('./toan-goc/',location.href);
+  target.searchParams.set('bo',suite.base);
+  target.hash='/dashboard/'+suite.base+(toolId?'/'+toolId:'');
+  location.assign(target);
+  return true;
+}
 function pinnedSuites(){
   return '<section class="pinned-suites" aria-labelledby="pinned-suites-title"><h2 id="pinned-suites-title">Bộ công cụ</h2>'+
     '<div class="pinned-suites-grid">'+originalSuites.filter(suiteInMode).map(suite=>
@@ -1682,6 +1695,24 @@ function solidPolyView(model,turn,tilt,hidden,element) {
   points.forEach(([x,y],i)=>{
     if(hidden||seen.has(i))body+=suiteText([x+Math.sign(x-340)*12,y+Math.sign(y-195)*15],model.names[i]);
   });
+  if(model.kind==='box'||model.kind==='cube'){
+    var dimensions=model.kind==='cube'?[model.edges[0]]:[...model.edges.slice(0,2),model.h];
+    var axes=[[[0,1],[3,2],[4,5],[7,6]],[[1,2],[0,3],[5,6],[4,7]],[[2,6],[1,5],[3,7],[0,4]]];
+    dimensions.forEach((value,i)=>{
+      var candidates=axes[i];
+      var pair=candidates.find(([a,b])=>edges.get([a,b].sort((x,y)=>x-y).join(':')).visible)||candidates[0];
+      var [a,b]=pair.map(index=>points[index]);
+      var length=polygonDistance(a,b);
+      if(length<16)return;
+      var [x,y]=[(a[0]+b[0])/2,(a[1]+b[1])/2];
+      var [dx,dy]=[(b[0]-a[0])/length,(b[1]-a[1])/length];
+      var name=['a','b','h'][i],label=['Chiều dài','Chiều rộng','Chiều cao'][i];
+      if(model.kind==='cube')label='Cạnh hình lập phương';
+      body+='<g class="solid-resize solid-resize-'+i+'" data-resize-dimension="'+i+'" data-dx="'+dx+'" data-dy="'+dy+
+        '" data-units-per-pixel="'+value/length+'"><title>Kéo để đổi '+label.toLowerCase()+'</title>'+
+        '<circle cx="'+x+'" cy="'+y+'" r="13"/>'+suiteText([x,y+5],name)+'</g>';
+    });
+  }
   return suiteGraphic('Hình chiếu song song của khối đa diện',body);
 }
 
@@ -1826,6 +1857,7 @@ function suiteSolid(host) {
       '<label class="suite-field">Đường minh họa<select id="solid-element"></select></label></div></div>'+
       '<div id="solid-results" aria-live="polite"></div></section></div>';
   var form=host.querySelector('form'),select=form.elements.kind,unit=form.elements.unit;
+  if(new URLSearchParams(location.search).get('tool')==='spatial')select.value='box';
   var dims=host.querySelector('#solid-dimensions'),stage=host.querySelector('#solid-stage'),results=host.querySelector('#solid-results');
   var turn=host.querySelector('#suite-turn'),tilt=host.querySelector('#suite-tilt');
   var hidden=host.querySelector('#solid-hidden'),element=host.querySelector('#solid-element');
@@ -1872,6 +1904,7 @@ function suiteSolid(host) {
         solidPolyView(model,+turn.value,+tilt.value,hidden.checked,element.value);
       caption.textContent=model.curved?(sphere?'Hình cầu có cùng đường bao tròn theo mọi hướng nhìn.':
         'Kéo để xoay. Đường tròn đáy có thể hiện thành elip khi đổi góc nhìn.'):
+        ['box','cube'].includes(model.kind)?'Kéo các nút trên cạnh để đổi kích thước. Kéo phần còn lại để xoay.':
         'Kéo để xoay. Nét đứt chỉ cạnh khuất. Số đo của khối được giữ khi đổi góc nhìn.';
     }
   }
@@ -1919,11 +1952,27 @@ function suiteSolid(host) {
   [hidden,element].forEach(input=>input.addEventListener('change',draw));
   stage.addEventListener('pointerdown',event=>{
     if(!event.isPrimary||event.button!==0||!stage.classList.contains('solid-rotatable'))return;
+    event.preventDefault();
     drag={id:event.pointerId,x:event.clientX,y:event.clientY,turn:+turn.value,tilt:+tilt.value};
+    var handle=event.target.closest('[data-resize-dimension]');
+    if(handle){
+      drag.input=dims.querySelector('#suite-solid-'+handle.dataset.resizeDimension);
+      drag.value=Number(drag.input.value);
+      drag.axis=handle.dataset;
+      drag.svgScale=stage.querySelector('svg').getScreenCTM().a;
+    }
     stage.setPointerCapture(event.pointerId);
   });
   stage.addEventListener('pointermove',event=>{
     if(!drag||event.pointerId!==drag.id)return;
+    if(drag.input){
+      var pixels=(event.clientX-drag.x)*Number(drag.axis.dx)+(event.clientY-drag.y)*Number(drag.axis.dy);
+      var resized=drag.value+pixels/drag.svgScale*Number(drag.axis.unitsPerPixel);
+      var step=10**(Math.floor(Math.log10(drag.value))-2);
+      drag.input.value=Math.max(Number(drag.input.min),Math.min(Number(drag.input.max),Number((Math.round(resized/step)*step).toPrecision(8))));
+      calculate();
+      return;
+    }
     var angle=drag.turn+(event.clientX-drag.x)*.7;
     turn.value=((angle+180)%360+360)%360-180;
     tilt.value=Math.max(-85,Math.min(85,drag.tilt+(event.clientY-drag.y)*.55));
@@ -4111,10 +4160,15 @@ if(b.dataset.mode&&b.dataset.mode!==state.mode){
 }
 if(b.dataset.originalSuite){
   var suite=originalSuites.find(item=>item.base===b.dataset.originalSuite);
+  if(openOriginalSuite(suite))return;
   navigate({page:'original-suite',suite:suite.base,mode:suite.geometry?'geometry':'number',cat:'all',query:''});
   return;
 }
-if(b.dataset.originalTool){navigate({page:'original',suite:b.dataset.originalTool,query:''});return;}
+if(b.dataset.originalTool){
+  var original=originalTools.find(tool=>tool.id===b.dataset.originalTool);
+  if(original.id!=='hinh-hoc-3d'&&openOriginalSuite(original.suite,original.id))return;
+  navigate({page:'original',suite:original.id,query:''});return;
+}
 if(b.dataset.view){
   if(b.dataset.view==='geometry-models')activeGeometryModel=null;
   navigate({page:b.dataset.view,query:'',cat:'all',tool:b.dataset.view==='tools'?'':state.tool});return;

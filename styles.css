@@ -613,8 +613,14 @@ a.btn { display: inline-flex; align-items: center; text-decoration: none; }
 .suite-polygon { fill: #5899ec29; stroke: var(--blue); stroke-width: 2.4; }
 .suite-polygon-1 { fill: #e78f4233; stroke: #c36a29; }
 .solid-workbench #solid-dimensions, #solid-camera { margin-block: 12px; }
-.solid-rotatable { cursor: grab; touch-action: none; }
+.solid-rotatable { cursor: grab; touch-action: none; user-select: none; }
 .solid-rotatable:active { cursor: grabbing; }
+.solid-resize { cursor: ew-resize; }
+.solid-resize-1 { cursor: nesw-resize; }
+.solid-resize-2 { cursor: ns-resize; }
+.solid-resize circle { fill: #fff; stroke: #0c5b9f; stroke-width: 2.5; }
+.solid-workbench svg .solid-resize text { fill: #164d80; stroke: none; pointer-events: none; }
+.solid-resize:hover circle { fill: #d7edff; }
 #solid-camera .fields { grid-template-columns: repeat(auto-fit,minmax(min(100%,135px),1fr)); }
 .solid-checkbox { display: flex; gap: 7px; align-items: center; }
 .solid-checkbox input { accent-color: var(--blue); width: 17px; height: 17px; }
