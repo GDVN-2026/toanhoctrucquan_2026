@@ -689,7 +689,7 @@ function activeNav(){
   document.getElementById('board-nav-label').textContent=state.mode==='geometry'?'Bảng dựng hình':'Bàn tính công thức';
   trail.hidden=state.page==='home'||state.page==='search';
   document.getElementById('trail-home').textContent=modeLabel();
-  document.getElementById('trail-current').textContent={formulas:'Thư viện công thức',tools:'Công cụ tính toán',favorites:'Đã lưu',original:'Bộ công cụ gốc','original-suite':'Bộ công cụ gốc',calculator:'Máy tính khoa học','geometry-lab':'Thao tác hình học','geometry-models':'Mô hình hình học',board:state.mode==='geometry'?'Bảng dựng hình':'Bàn tính công thức'}[state.page]||'';
+  document.getElementById('trail-current').textContent={formulas:'Thư viện công thức',tools:'Công cụ tính toán',favorites:'Đã lưu',original:'Bộ công cụ','original-suite':'Bộ công cụ',calculator:'Máy tính khoa học','geometry-lab':'Thao tác hình học','geometry-models':'Mô hình hình học',board:state.mode==='geometry'?'Bảng dựng hình':'Bàn tính công thức'}[state.page]||'';
   document.getElementById('geometry-nav').hidden=state.mode!=='geometry';
   document.querySelectorAll('[data-mode]').forEach(function(button){
     button.setAttribute('aria-pressed',String(button.dataset.mode===state.mode));
@@ -823,7 +823,7 @@ function drawCardPreviews(){
 }
 
 var originalSuites = [
-  {label:'Hình học và đo lường',geometry:true,icon:'△',preview:'heron',caption:'Dựng hình, đồng dạng, hình học 3D',port:47861,base:'hinh-hoc-va-do-luong',groups:[
+  {label:'Hình học và đo lường',geometry:true,icon:'△',preview:'heron',caption:'Dựng hình, đồng dạng, hình học 3D',base:'hinh-hoc-va-do-luong',groups:[
     ['Hình học phẳng','Dựng và khảo sát hình','heron',[
       ['Tam giác đều','hinh-hoc-mat-phang/tam-giac-deu'],['Tam giác vuông','hinh-hoc-mat-phang/tam-giac-vuong'],
       ['Hình chữ nhật','hinh-hoc-mat-phang/hinh-chu-nhat'],['Hình thoi','hinh-hoc-mat-phang/hinh-thoi'],
@@ -835,7 +835,7 @@ var originalSuites = [
     ]],
     ['Hình học không gian','Khảo sát hình khối','solid',[['Hình học 3D','hinh-hoc-3d']]]
   ]},
-  {label:'Xác suất và thống kê',icon:'▥',preview:'statistics',caption:'Biểu đồ, tần số, xác suất và thí nghiệm',port:47862,base:'thong-ke-va-xac-suat',groups:[
+  {label:'Xác suất và thống kê',icon:'▥',preview:'statistics',caption:'Biểu đồ, tần số, xác suất và thí nghiệm',base:'thong-ke-va-xac-suat',groups:[
     ['Xác suất – Thống kê','Vẽ biểu đồ','statistics',[
       ['Biểu đồ tranh','bieu-do/bieu-do-tranh'],['Biểu đồ cột','bieu-do/bieu-do-cot'],['Biểu đồ cột kép','bieu-do/bieu-do-cotkep'],
       ['Biểu đồ đoạn thẳng','bieu-do/bieu-do-doan-thang'],['Biểu đồ quạt','bieu-do/bieu-do-quat']
@@ -850,7 +850,7 @@ var originalSuites = [
       ['Tung đồng xu','minh-hoa-bai-toan/dong-xu'],['Gieo xúc xắc','minh-hoa-bai-toan/xuc-xac'],['Bắt bóng','minh-hoa-bai-toan/bat-bong']
     ]]
   ]},
-  {label:'Đại số và giải tích',icon:'ƒ',preview:'derivative',caption:'Đồ thị, giao điểm và đạo hàm',port:47863,base:'dai-so-va-giai-tich',groups:[
+  {label:'Đại số và giải tích',icon:'ƒ',preview:'derivative',caption:'Đồ thị, giao điểm và đạo hàm',base:'dai-so-va-giai-tich',groups:[
     ['Đại số','Khảo sát đồ thị','graph',[
       ['Hàm số bậc hai','do-thi-ham-so/ham-so-bac-2'],['Hàm số lũy thừa','do-thi-ham-so/ham-so-luy-thua'],
       ['Hàm số logarit','do-thi-ham-so/ham-so-logarit'],['Sự tương giao của đồ thị','minh-hoa-do-thi/mo-ta-su-tuong-giao']
@@ -922,16 +922,16 @@ var calculatorExamples = {
   derivative:['Với f(x) = 2x³ + 1, tính đạo hàm tại x₀ = 2.', 'f′(x) = 6x² nên f′(2) = 24.']
 };
 var originalExamples = {
-  'hinh-hoc-mat-phang/tam-giac-deu':['Kéo một đỉnh rồi đọc số đo ba góc.', 'Trong tam giác đều, mỗi góc bằng 60° và ba cạnh bằng nhau.'],
-  'hinh-hoc-mat-phang/tam-giac-vuong':['Thay đổi một đỉnh và quan sát góc vuông.', 'Góc vuông giữ 90°. Hai góc nhọn có tổng 90°.'],
-  'hinh-hoc-mat-phang/hinh-chu-nhat':['Thay đổi chiều dài hoặc chiều rộng, quan sát góc và hai đường chéo.', 'Bốn góc bằng 90°. Hai đường chéo bằng nhau.'],
+  'hinh-hoc-mat-phang/tam-giac-deu':['Đổi độ dài cạnh AB rồi đọc số đo ba góc.', 'Trong tam giác đều, mỗi góc bằng 60° và ba cạnh bằng nhau.'],
+  'hinh-hoc-mat-phang/tam-giac-vuong':['Đổi độ dài hai cạnh góc vuông AB và AC.', 'Góc vuông giữ 90°. Hai góc nhọn có tổng 90°.'],
+  'hinh-hoc-mat-phang/hinh-chu-nhat':['Đổi chiều dài hoặc chiều rộng rồi đọc các góc và hai đường chéo.', 'Bốn góc bằng 90°. Hai đường chéo bằng nhau.'],
   'hinh-hoc-mat-phang/hinh-thoi':['Đổi độ mở của hình và quan sát hai đường chéo.', 'Hai đường chéo vuông góc và cắt nhau tại trung điểm của mỗi đường.'],
-  'hinh-hoc-mat-phang/hinh-binh-hanh':['Kéo đỉnh và so sánh từng cặp cạnh đối.', 'Hai cặp cạnh đối vẫn song song và bằng nhau.'],
+  'hinh-hoc-mat-phang/hinh-binh-hanh':['Đổi góc A và so sánh từng cặp cạnh đối.', 'Hai cặp cạnh đối vẫn song song và bằng nhau.'],
   'hinh-hoc-mat-phang/hinh-thang-can':['Thay đổi độ dài đáy và so sánh hai góc kề cùng một đáy.', 'Hai góc kề một đáy bằng nhau.'],
-  'hinh-hoc-mat-phang/hinh-doi-xung':['Chọn cặp điểm tương ứng qua trục đối xứng.', 'Trục đối xứng vuông góc và đi qua trung điểm đoạn nối hai điểm khác nhau.'],
+  'hinh-hoc-mat-phang/hinh-doi-xung':['Chọn trục và so sánh A với ảnh A′.', 'Trục đối xứng vuông góc và đi qua trung điểm đoạn nối hai điểm khác nhau.'],
   'da-giac':['Chọn một ngũ giác và đếm số cạnh.', 'Với ngũ giác đơn, tổng góc trong là (5 − 2) × 180° = 540°.'],
-  'cac-duong-dac-biet-trong-tam-giac':['Quan sát ba đường trung tuyến nếu đang bật trung tuyến.', 'Ba đường đồng quy tại trọng tâm. Từ đỉnh đến trọng tâm dài 2/3 trung tuyến.'],
-  'cac-hinh-dong-dang':['Chọn hai hình đồng dạng rồi so sánh các cạnh tương ứng.', 'Nếu một cặp cạnh là 3 và 6, tỉ số từ hình nhỏ đến hình lớn là 2. Các góc tương ứng bằng nhau.'],
+  'cac-duong-dac-biet-trong-tam-giac':['Chọn Trung tuyến rồi quan sát vị trí giao của ba đường.', 'Ba đường đồng quy tại trọng tâm. Từ đỉnh đến trọng tâm dài 2/3 trung tuyến.'],
+  'cac-hinh-dong-dang':['Đặt tỉ số k = 2 rồi so sánh các cạnh tương ứng.', 'Nếu AB = 6 thì A′B′ = 12. Các góc tương ứng bằng nhau và diện tích tăng gấp 4 lần.'],
   'hinh-hoc-3d':['Quan sát hình lập phương từ các hướng khác nhau.', 'Đếm được 6 mặt, 12 cạnh và 8 đỉnh.'],
   'bieu-do/bieu-do-tranh':['Đặt tiêu đề “Số quyển sách”. Thêm An = 2 và Bình = 4.', 'Bình có số sách gấp đôi An. Nếu mỗi biểu tượng ứng với 1 quyển thì hai hàng có 2 và 4 biểu tượng.'],
   'bieu-do/bieu-do-cot':['Điền ba giá trị cột 3, 5 và 2. Đặt tên tương ứng An, Bình và Chi.', 'Cột Bình cao nhất, ứng với 5. Tổng ba giá trị là 10.'],
@@ -942,8 +942,8 @@ var originalExamples = {
   'thong-ke/bang-ghep-nhom':['Nhập hai khoảng [0; 10) và [10; 20) với tần số 2 và 2.', 'Dùng giá trị đại diện 5 và 15. Trung bình ước tính là 10, phương sai tổng thể ước tính là 25.'],
   'xac-suat/tinh-toan-chung':['Thử với N = 6 và K = 2 trong phần tính tổ hợp hoặc chỉnh hợp.', 'C(6,2) = 15, A(6,2) = 30. Hai cách đếm khác nhau ở việc xét thứ tự.'],
   'xac-suat/phan-phoi-nhi-thuc':['Đặt n = 6, p = 0,5, xét X = 2.', 'Xác suất đúng hai lần thành công là 15/64 ≈ 0,234375.'],
-  'minh-hoa-bai-toan/dong-xu':['Giữ một đồng xu, nhập 20 lần và bấm Tung Đồng Xu.', 'Tổng số lần ngửa và sấp là 20. Số lần ngửa có thể khác 10 trong một lượt.'],
-  'minh-hoa-bai-toan/xuc-xac':['Giữ một xúc xắc rồi bấm Lắc vài lần.', 'Mỗi lần cho một mặt từ 1 đến 6. Với xúc xắc cân đối, xác suất mặt chẵn là 1/2.'],
+  'minh-hoa-bai-toan/dong-xu':['Giữ một đồng xu, nhập 20 lượt và bấm Tung đồng xu.', 'Tổng số lần ngửa và sấp là 20. Số lần ngửa có thể khác 10 trong một lượt.'],
+  'minh-hoa-bai-toan/xuc-xac':['Giữ một xúc xắc rồi bấm Gieo xúc xắc vài lần.', 'Mỗi lần cho một mặt từ 1 đến 6. Với xúc xắc cân đối, xác suất mặt chẵn là 1/2.'],
   'minh-hoa-bai-toan/bat-bong':['Giữ hộp mẫu có 1 đỏ, 1 xanh và 1 vàng rồi bấm Lấy bóng.', 'Trước lần rút đầu, mỗi màu có xác suất 1/3 nếu các bóng đồng khả năng.'],
   'do-thi-ham-so/ham-so-bac-2':['Thử y = x² − 2x − 3 bằng cách đặt các hệ số a = 1, b = −2, c = −3.', 'Đỉnh (1; −4), giao điểm với trục Ox là (−1; 0) và (3; 0).'],
   'do-thi-ham-so/ham-so-luong-giac':['Quan sát y = sin x. So sánh x = 0, π/2 và π.', 'Các giá trị lần lượt là 0, 1, 0. Chu kỳ là 2π.'],
@@ -951,7 +951,7 @@ var originalExamples = {
   'do-thi-ham-so/ham-so-logarit':['Thử cơ số 2 và quan sát x = 1, 2, 4.', 'Các giá trị logarit là 0, 1, 2. Miền xác định x > 0.'],
   'minh-hoa-do-thi/mo-ta-su-tuong-giao':['Tìm điểm hai đồ thị cắt nhau. Ví dụ y = x² và y = x.', 'Giải x² = x được x = 0 hoặc 1. Hai giao điểm (0; 0) và (1; 1).'],
   'mo-ta-dao-ham':['Quan sát hệ số góc tiếp tuyến. Ví dụ với y = x² tại x = 2.', 'y′ = 2x nên hệ số góc bằng 4 và tiếp tuyến đi qua (2; 4).'],
-  'minh-hoa-do-thi/mo-hinh-thao-tac-dong':['Cho điểm chạy dọc đồ thị tiến gần một vị trí từ hai phía. Ví dụ y = x² khi x tiến đến 2.', 'Giá trị y tiến về 4 từ cả hai phía.']
+  'minh-hoa-do-thi/mo-hinh-thao-tac-dong':['Với y = x² và x₀ = 2, giảm bước h từ 0,1 xuống 0,01.', 'Giá trị y tiến về 4 từ cả hai phía.']
 };
 var originalTools=originalSuites.flatMap(suite=>suite.groups.flatMap(([topic,group,preview,entries])=>
   entries.map(([name,id])=>({id,name,topic,group,preview,suite}))));
@@ -963,7 +963,7 @@ document.getElementById('pinned-suites-nav').innerHTML=originalSuites.map(suite=
   '<button type="button" data-original-suite="'+suite.base+'"><span aria-hidden="true">'+suite.icon+'</span>'+esc(suite.label)+'</button>').join('');
 function suiteInMode(suite){return inMode(Boolean(suite.geometry));}
 function pinnedSuites(){
-  return '<section class="pinned-suites" aria-labelledby="pinned-suites-title"><h2 id="pinned-suites-title">Bộ công cụ gốc</h2>'+
+  return '<section class="pinned-suites" aria-labelledby="pinned-suites-title"><h2 id="pinned-suites-title">Bộ công cụ</h2>'+
     '<div class="pinned-suites-grid">'+originalSuites.filter(suiteInMode).map(suite=>
       '<button class="topic-card suite-feature topic-tone-'+originalSuites.indexOf(suite)+'" type="button" data-original-suite="'+suite.base+'">'+
       '<span class="topic-card-copy"><strong>'+esc(suite.label)+'</strong><small>'+esc(suite.caption)+'</small></span>'+
@@ -983,36 +983,645 @@ function originalToolGroups(items,suitePage=false){
     if(!groups.has(item.group))groups.set(item.group,[]);
     groups.get(item.group).push(item);
   });
-  return '<section class="topic-content original-tools">'+(suitePage?'':'<h3>'+esc(items[0].suite.label)+' <span>· Bộ công cụ gốc</span></h3>')+'<div class="original-groups">'+
+  return '<section class="topic-content original-tools">'+(suitePage?'':'<h3>'+esc(items[0].suite.label)+' <span>· Bộ công cụ</span></h3>')+'<div class="original-groups">'+
     Array.from(groups,([name,entries])=>'<div class="original-group"><div class="original-group-head"><h4>'+esc(name)+'</h4><canvas width="300" height="240" data-preview="'+entries[0].preview+'" aria-hidden="true"></canvas></div>'+
       '<ul>'+entries.map(tool=>'<li><button type="button" data-original-tool="'+esc(tool.id)+'">'+esc(tool.name)+'<span aria-hidden="true">→</span></button></li>').join('')+'</ul></div>').join('')+'</div></section>';
 }
+function suiteFields(fields) {
+  return fields.map(spec=>{
+    var [key,label,value,minimum,maximum,step,type='number']=spec;
+    var id='suite-'+key;
+    if(Array.isArray(value)){
+      return '<label class="suite-field" for="'+id+'">'+esc(label)+'<select id="'+id+'" name="'+key+'">'+
+        value.map(([code,name])=>'<option value="'+esc(code)+'">'+esc(name)+'</option>').join('')+'</select></label>';
+    }
+    if(typeof value==='string'){
+      return '<label class="suite-field suite-wide" for="'+id+'">'+esc(label)+(key==='title'?
+        '<input id="'+id+'" name="'+key+'" maxlength="96" value="'+esc(value)+'">':
+        '<textarea rows="5" id="'+id+'" name="'+key+'">'+esc(value)+'</textarea>')+'</label>';
+    }
+    return '<label class="suite-field" for="'+id+'">'+esc(label)+(type==='range'?' <output for="'+id+'">'+value+'°</output>':'')+
+      '<input id="'+id+'" name="'+key+'" type="'+type+'" value="'+value+'"'+
+      (minimum===undefined?'':' min="'+minimum+'"')+(maximum===undefined?'':' max="'+maximum+'"')+' step="'+(step||'any')+'" required></label>';
+  }).join('');
+}
+function suiteNumber(values,key,min=-1e8,max=1e8) {
+  var value=numeric(values[key],key);
+  if(value<min||value>max)throw Error('Nhập '+key+' trong khoảng từ '+fmt(min)+' đến '+fmt(max)+'.');
+  return value;
+}
+function suiteCount(values,key,min,max) {
+  return whole(suiteNumber(values,key,min,max),key);
+}
+function suiteRows(rows) {
+  return '<dl class="suite-readings">'+rows.map(([label,value])=>'<div><dt>'+esc(label)+'</dt><dd>'+esc(typeof value==='number'?fmt(value):value)+'</dd></div>').join('')+'</dl>';
+}
+function suiteTable(headers,rows) {
+  return '<div class="suite-table"><table><thead><tr>'+headers.map(h=>'<th scope="col">'+esc(h)+'</th>').join('')+
+    '</tr></thead><tbody>'+rows.map(row=>'<tr>'+row.map((v,i)=>i===0?'<th scope="row">'+esc(v)+'</th>':'<td>'+esc(v)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+}
+function suiteWorkbench(host,fields,render,options={}) {
+  host.innerHTML='<div class="math-board suite-workbench"><form class="panel suite-controls"><h2>'+esc(options.controls||'Thông số')+'</h2>'+
+    (options.help?'<p class="calc-note">'+esc(options.help)+'</p>':'')+'<div class="fields">'+suiteFields(fields)+'</div>'+
+    '<div class="board-actions"><button class="btn blue" type="submit">'+esc(options.action||'Cập nhật')+'</button>'+
+    '<button class="btn outline" type="button" data-suite-example>Nạp ví dụ</button></div></form>'+
+    '<section class="panel suite-output" aria-live="polite"></section></div>';
+  var form=host.querySelector('form'),target=host.querySelector('.suite-output');
+  function update(action) {
+    try {
+      var values=Object.fromEntries(new FormData(form));
+      target.innerHTML=render(values,action);
+    } catch(error) { target.innerHTML='<p class="board-error" role="alert">'+esc(error.message)+'</p>'; }
+  }
+  form.addEventListener('submit',event=>{event.preventDefault();update('run');});
+  form.querySelector('[data-suite-example]').addEventListener('click',()=>{
+    form.reset();
+    form.querySelectorAll('input[type="range"]').forEach(input=>{input.previousElementSibling.value=input.value+'°';});
+    update('reset');
+  });
+  if(options.live)form.addEventListener('change',event=>{
+    if(event.target.type!=='range'&&form.checkValidity())update('change');
+  });
+  form.addEventListener('input',event=>{
+    if(event.target.type!=='range')return;
+    event.target.previousElementSibling.value=event.target.value+'°';
+    if(form.checkValidity())update('change');
+  });
+  update('initial');
+}
+function suiteGraphic(label,body) {
+  return '<svg class="suite-graphic" viewBox="0 0 680 390" role="img" aria-label="'+esc(label)+'">'+body+'</svg>';
+}
+function suitePath(points,className='suite-stroke',tag='polyline') {
+  return '<'+tag+' class="'+className+'" points="'+points.map(point=>point.join(',')).join(' ')+'"/>';
+}
+function suiteText([x,y],text,extra='') {
+  return '<text x="'+x+'" y="'+y+'" text-anchor="middle" '+extra+'>'+esc(text)+'</text>';
+}
+function suiteDot([x,y]) {
+  return '<circle class="suite-dot" cx="'+x+'" cy="'+y+'" r="4"/>';
+}
+var suiteColors=['#2262b3','#d66a43','#238676','#8a59ac','#bd8231','#547897'];
+
+function chartSource(text,paired,wholeValues=false) {
+  var rows=text.trim().split(/\r?\n/).filter(line=>line.trim());
+  if(!rows.length||rows.length>12)throw Error('Nhập từ 1 đến 12 dòng dữ liệu.');
+  return rows.map((line,i)=>{
+    var [name,...data]=line.split(';').map(value=>value.trim());
+    if(!name||name.length>24||data.length!==(paired?2:1))throw Error('Kiểm tra tên và số cột ở dòng '+(i+1)+'.');
+    var values=data.map(item=>numeric(item,'ở dòng '+(i+1)));
+    if(values.some(n=>Math.abs(n)>1e8||wholeValues&&(!Number.isInteger(n)||n<0)))throw Error('Số liệu vượt phạm vi hoặc chưa đúng loại ở dòng '+(i+1)+'.');
+    return [name,...values];
+  });
+}
+function suiteChart(id,host) {
+  var paired=id==='bieu-do-cotkep', pie=id==='bieu-do-quat', pictogram=id==='bieu-do-tranh', line=id==='bieu-do-doan-thang';
+  var sample=paired?'Nhóm 1; 3; 5\nNhóm 2; 4; 4':pie?'Nhóm 1; 2\nNhóm 2; 3\nNhóm 3; 5':pictogram?'An; 2\nBình; 4':line?'Ngày 1; 2\nNgày 2; 5\nNgày 3; 4':'An; 3\nBình; 5\nChi; 2';
+  var fields=[['title','Tiêu đề biểu đồ','Số liệu lớp học'],['data',paired?'Nhãn; Giá trị 1; Giá trị 2':'Nhãn; Giá trị',sample]];
+  if(pictogram){
+    fields[0][2]='Số quyển sách';
+    fields.push(['symbol','Số đơn vị ứng với một chấm',1,1,100000000,1]);
+  }
+  suiteWorkbench(host,fields,values=>{
+    var title=values.title.trim()||'Biểu đồ';
+    if(title.length>96)throw Error('Tiêu đề tối đa 96 ký tự.');
+    var rows=chartSource(values.data,paired,pictogram);
+    var data=rows.flatMap(row=>row.slice(1));
+    var total=data.reduce((sum,n)=>sum+n,0);
+    var body='';
+    if(pie){
+      if(data.some(n=>n<0)||total<=0)throw Error('Biểu đồ quạt cần số liệu không âm với tổng lớn hơn 0.');
+      var angle=-Math.PI/2;
+      rows.forEach(([label,n],i)=>{
+        if(!n)return;
+        var end=angle+2*Math.PI*n/total;
+        var point=t=>[240+140*Math.cos(t),195+140*Math.sin(t)].join(' ');
+        var color=suiteColors[i%suiteColors.length];
+        body+=n===total?'<circle cx="240" cy="195" r="140" fill="'+color+'"/>':
+          '<path fill="'+color+'" d="M240 195 L'+point(angle)+' A140 140 0 '+(n/total>.5?1:0)+' 1 '+point(end)+' Z"/>';
+        angle=end;
+      });
+      rows.forEach(([name,n],i)=>{
+        var y=55+i*25;
+        body+='<circle cx="435" cy="'+y+'" r="6" fill="'+suiteColors[i%suiteColors.length]+'"/>'+
+          suiteText([450,y+4],name+' · '+fmt(100*n/total)+'%','style="text-anchor:start"');
+      });
+    }else if(pictogram){
+      var symbol=suiteCount(values,'symbol',1,100000000);
+      if(data.some(n=>n/symbol>30))throw Error('Tăng giá trị mỗi chấm để mỗi hàng có tối đa 30 chấm.');
+      var spacing=Math.min(52,310/rows.length);
+      rows.forEach(([name,n],i)=>{
+        var y=52+i*spacing;
+        body+=suiteText([95,y+5],name);
+        for(var j=0;j<Math.floor(n/symbol);j++)body+='<circle cx="'+(167+j*15)+'" cy="'+y+'" r="5.5" fill="#2262b3"/>';
+        if(n%symbol){
+          var x=167+Math.floor(n/symbol)*15, ratio=(n%symbol)/symbol, sweep=2*Math.PI*ratio, end=[x+5.5*Math.sin(sweep),y-5.5*Math.cos(sweep)];
+          body+='<circle cx="'+x+'" cy="'+y+'" r="5.5" class="suite-marker-outline"/><path fill="#2262b3" d="M '+x+' '+y+' L '+x+' '+(y-5.5)+' A 5.5 5.5 0 '+(ratio>.5?1:0)+' 1 '+end.join(' ')+' Z"/>';
+        }
+        body+=suiteText([645,y+5],fmt(n));
+      });
+      body+=suiteText([340,370],'Một chấm = '+fmt(symbol)+' đơn vị');
+    }else{
+      var lo=Math.min(0,...data),hi=Math.max(0,...data);
+      if(lo===hi)hi=1;
+      var y=n=>310-(n-lo)/(hi-lo)*262, pitch=576/rows.length, base=y(0);
+      var dots=[];
+      for(var tick=0;tick<=5;tick++){
+        var value=lo+(hi-lo)*tick/5;
+        body+=suitePath([[60,y(value)],[650,y(value)]],'suite-gridline')+suiteText([28,y(value)+4],fmt(Math.round(value*1e4)/1e4));
+      }
+      body+=suitePath([[60,45],[60,310]],'suite-axis')+suitePath([[60,base],[650,base]],'suite-axis');
+      rows.forEach(([name,...numbers],i)=>{
+        var x=66+pitch*(i+.5);
+        body+=suiteText([x,342],name.length>10?name.slice(0,9)+'…':name);
+        if(line){dots.push([x,y(numbers[0])]);return;}
+        var width=Math.min(42,pitch/(paired?3:1.65));
+        numbers.forEach((n,j)=>{
+          var left=x+(paired?(j===0?-width:2):-width/2), top=Math.min(base,y(n));
+          body+='<rect x="'+left+'" y="'+top+'" width="'+width+'" height="'+Math.abs(base-y(n))+'" rx="2" fill="'+suiteColors[j]+'"/>';
+        });
+      });
+      if(line)body+=suitePath(dots)+dots.map(suiteDot).join('');
+      if(paired)body+=suiteText([340,372],'Xanh: Giá trị 1  ·  Cam: Giá trị 2');
+    }
+    var headers=pie?['Nhãn','Giá trị','Tỉ lệ']:paired?['Nhãn','Giá trị 1','Giá trị 2']:['Nhãn','Giá trị'];
+    return '<h2>'+esc(title)+'</h2>'+suiteGraphic(title,body)+
+      suiteTable(headers,rows.map(row=>pie?[row[0],fmt(row[1]),fmt(100*row[1]/total)+'%']:row.map(v=>typeof v==='number'?fmt(v):v)))+
+      suiteRows([['Tổng số liệu',total]]);
+  },{action:'Vẽ biểu đồ',help:'Mỗi dòng là một mục. Dùng dấu chấm phẩy để ngăn các cột và dấu chấm cho phần thập phân.'});
+}
+
+function suiteStatistics(id,host) {
+  var grouped=id==='bang-ghep-nhom';
+  suiteWorkbench(host,[['data',grouped?'Cận dưới; Cận trên; Tần số':'Giá trị; Tần số',grouped?'0; 10; 2\n10; 20; 2':'2; 1\n4; 3\n6; 2']],values=>{
+    var rows=values.data.trim().split(/\r?\n/).filter(line=>line.trim());
+    if(!rows.length||rows.length>100)throw Error('Nhập từ 1 đến 100 dòng số liệu.');
+    var groups=rows.map((line,i)=>{
+      var parts=line.split(';');
+      if(parts.length!==(grouped?3:2))throw Error('Dòng '+(i+1)+' có sai số cột.');
+      var nums=parts.map(v=>numeric(v,'ở dòng '+(i+1)));
+      if(nums.some(v=>Math.abs(v)>1e8))throw Error('Số liệu vượt phạm vi.');
+      var frequency=whole(nums.at(-1),'Tần số');
+      if(frequency<0)throw Error('Tần số phải không âm.');
+      if(grouped&&nums[0]>=nums[1])throw Error('Cận trên phải lớn hơn cận dưới.');
+      return {start:nums[0],end:grouped?nums[1]:nums[0],frequency,middle:grouped?(nums[0]+nums[1])/2:nums[0]};
+    }).sort((a,b)=>a.start-b.start);
+    if(grouped&&groups.some((item,i)=>i&&item.start<groups[i-1].end))throw Error('Các khoảng không được chồng lên nhau.');
+    if(!grouped)groups=Array.from(groups.reduce((merged,item)=>{
+      if(merged.has(item.middle))merged.get(item.middle).frequency+=item.frequency;
+      else merged.set(item.middle,item);
+      return merged;
+    },new Map()).values());
+    var count=groups.reduce((sum,g)=>sum+g.frequency,0);
+    if(!count)throw Error('Tổng tần số phải lớn hơn 0.');
+    var mean=groups.reduce((sum,g)=>sum+g.middle*g.frequency,0)/count;
+    var variance=groups.reduce((sum,g)=>sum+(g.middle-mean)**2*g.frequency,0)/count;
+    var results=[['Tổng tần số',count],[grouped?'Trung bình ước tính':'Trung bình',mean],[grouped?'Phương sai tổng thể ước tính':'Phương sai tổng thể',variance],['Độ lệch chuẩn'+(grouped?' ước tính':''),Math.sqrt(variance)]];
+    if(!grouped){
+      function atRank(rank){
+        var accumulated=0;
+        return groups.find(item=>(accumulated+=item.frequency)>=rank).middle;
+      }
+      results.push(['Trung vị',(atRank(Math.floor((count+1)/2))+atRank(Math.ceil((count+1)/2)))/2]);
+    }
+    return '<h2>Kết quả thống kê</h2>'+suiteRows(results)+suiteTable([grouped?'Khoảng':'Giá trị','Giá trị đại diện','Tần số','Tần số tương đối'],
+      groups.map(g=>[grouped?'['+fmt(g.start)+'; '+fmt(g.end)+')':fmt(g.start),fmt(g.middle),fmt(g.frequency),fmt(100*g.frequency/count)+'%']));
+  },{action:'Tính thống kê',help:grouped?'Mỗi dòng là một khoảng [cận dưới; cận trên) và tần số.':'Mỗi dòng gồm một giá trị và số lần xuất hiện.'});
+}
+
+function suiteProbability(id,host) {
+  var binomial=id==='phan-phoi-nhi-thuc';
+  var fields=[['n',binomial?'Số lượt thử n':'Số phần tử n',6,0,250,1],['k',binomial?'Số lần thành công k':'Số phần tử chọn k',2,0,250,1]];
+  if(binomial)fields.push(['p','Xác suất thành công p',.5,0,1]);
+  else fields.push(['good','Số kết quả thuận lợi',3,0,100000000,1],['total','Số kết quả đồng khả năng',6,1,100000000,1]);
+  suiteWorkbench(host,fields,values=>{
+    var n=suiteCount(values,'n',0,250),k=suiteCount(values,'k',0,n),combinations=choose(n,k);
+    if(!binomial){
+      var total=suiteCount(values,'total',1,100000000),good=suiteCount(values,'good',0,total),divisor=gcd(good,total)||1;
+      return '<h2>Đếm và tính xác suất</h2>'+suiteRows([['Giai thừa n!',factorial(n).toString()],['Chỉnh hợp A(n,k)',(combinations*factorial(k)).toString()],['Tổ hợp C(n,k)',combinations.toString()],['Xác suất',good/divisor+'/'+total/divisor+' ≈ '+fmt(good/total)]]);
+    }
+    var p=suiteNumber(values,'p',0,1);
+    var probabilities=Array.from({length:n+1},(_,i)=>Number(choose(n,i))*p**i*(1-p)**(n-i));
+    var rows=[['P(X = '+k+')',probabilities[k]],['P(X ≤ '+k+')',Math.min(1,probabilities.slice(0,k+1).reduce((sum,v)=>sum+v,0))],['Kỳ vọng np',n*p],['Phương sai np(1 − p)',n*p*(1-p)]];
+    var peak=Math.max(...probabilities),pitch=590/probabilities.length;
+    var plot=suitePath([[48,307],[649,307]],'suite-axis');
+    probabilities.forEach((v,i)=>{
+      var height=254*v/peak;
+      plot+='<rect x="'+(55+i*pitch)+'" y="'+(307-height)+'" width="'+Math.max(1,pitch*.8)+'" height="'+height+'" fill="'+(i===k?'#d66a43':'#2262b3')+'"/>';
+    });
+    plot+=suiteText([53,331],'0')+suiteText([642,331],n)+suiteText([340,370],'Cột cam: X = '+k);
+    return '<h2>Phân phối nhị thức</h2>'+suiteRows(rows)+suiteGraphic('Biểu đồ xác suất nhị thức',plot);
+  },{action:'Tính',help:binomial?'Các lượt thử độc lập và cùng xác suất thành công p.':'Dùng n và k để đếm. Với xác suất cổ điển, nhập số kết quả thuận lợi và tổng số kết quả đồng khả năng.'});
+}
+function suiteRandom(id,host) {
+  var coin=id==='dong-xu',ball=id==='bat-bong';
+  var fields=ball?[['red','Số bóng đỏ',1,0,10000,1],['green','Số bóng xanh',1,0,10000,1],['yellow','Số bóng vàng',1,0,10000,1],
+      ['replacement','Cách lấy', [['no','Không hoàn lại'],['yes','Có hoàn lại']]]]:
+    [['count',coin?'Số đồng xu mỗi lượt':'Số xúc xắc mỗi lượt',1,1,10,1],['trials','Số lượt',coin?20:1,1,1000,1]];
+  var names=coin?['Ngửa','Sấp']:ball?['Đỏ','Xanh','Vàng']:['Mặt 1','Mặt 2','Mặt 3','Mặt 4','Mặt 5','Mặt 6'];
+  var counts=names.map(()=>0),last=[],pool,key;
+  function pick(max){return Math.floor(Math.random()*max);}
+  suiteWorkbench(host,fields,(values,action)=>{
+    var signature=JSON.stringify(values);
+    if(action==='reset'||signature!==key){key=signature;counts=names.map(()=>0);last=[];pool=null;}
+    var exhausted=false;
+    if(ball){
+      var initial=['red','green','yellow'].map(c=>suiteCount(values,c,0,10000));
+      if(!pool)pool=initial.slice();
+      var remaining=pool.reduce((a,b)=>a+b,0);
+      if(!initial.some(Boolean))throw Error('Thêm ít nhất một quả bóng.');
+      if(action==='run'&&remaining){
+        var draw=pick(remaining);
+        var color=pool.findIndex((n,i)=>draw<pool.slice(0,i+1).reduce((a,b)=>a+b,0));
+        counts[color]++;last=[color];
+        if(values.replacement==='no')pool[color]--;
+      }else if(action==='run')exhausted=true;
+    }else{
+      var count=suiteCount(values,'count',1,10),trials=suiteCount(values,'trials',1,1000);
+      if(action==='run'){
+        for(var i=0;i<trials;i++){
+          last=Array.from({length:count},()=>pick(names.length));
+          last.forEach(face=>counts[face]++);
+        }
+      }
+    }
+    var sum=counts.reduce((a,b)=>a+b,0);
+    var rows=names.map((name,i)=>[name,String(counts[i]),sum?fmt(100*counts[i]/sum)+'%':'0%',...(ball?[String(pool[i])]:[])]);
+    return '<h2>Kết quả thí nghiệm</h2>'+
+      '<p class="suite-latest">'+esc(exhausted?'Hộp đã hết bóng. Bấm Nạp ví dụ để bắt đầu lại.':last.length?'Lượt cuối: '+last.map(i=>names[i]).join(', '):'Bấm '+(ball?'Lấy bóng':coin?'Tung đồng xu':'Gieo xúc xắc')+' để bắt đầu.')+'</p>'+
+      suiteRows([['Số kết quả đã quan sát',sum],...(ball?[['Số bóng còn lại',pool.reduce((a,b)=>a+b,0)]]:[])])+
+      suiteTable(['Kết quả','Tần số','Tần số tương đối',...(ball?['Còn trong hộp']:[])],rows);
+  },{action:ball?'Lấy bóng':coin?'Tung đồng xu':'Gieo xúc xắc',help:'Kết quả được cộng dồn qua các lần chạy. Nạp ví dụ sẽ xóa kết quả đã quan sát.'});
+}
+
+function suitePlot(series,xMin,xMax,points=[]) {
+  var xs=Array.from({length:401},(_,i)=>xMin+(xMax-xMin)*i/400);
+  var tracks=series.map(item=>xs.map(x=>[x,item.evaluate(x)]));
+  var ys=tracks.flatMap(run=>run.map(([,y])=>y).filter(y=>Number.isFinite(y)&&Math.abs(y)<=1e12)).sort((a,b)=>a-b);
+  if(!ys.length)throw Error('Không có điểm hữu hạn trong đoạn đang vẽ. Hãy đổi miền x.');
+  var trim=Math.floor(ys.length*.015);
+  var yMin=Math.min(0,ys[trim],...points.map(p=>p[1]));
+  var yMax=Math.max(0,ys[ys.length-1-trim],...points.map(p=>p[1]));
+  if(yMin===yMax){yMin-=1;yMax+=1;}
+  var pad=(yMax-yMin)*.08;
+  yMin-=pad;yMax+=pad;
+  var tx=x=>55+(x-xMin)*585/(xMax-xMin), ty=y=>330-(y-yMin)*294/(yMax-yMin);
+  var body='<defs><clipPath id="suite-plot-clip"><rect x="55" y="36" width="585" height="294"/></clipPath></defs>';
+  for(var i=0;i<=8;i++){
+    var x=xMin+(xMax-xMin)*i/8;
+    body+=suitePath([[tx(x),36],[tx(x),330]],'suite-gridline')+suiteText([tx(x),352],fmt(Number(x.toPrecision(4))));
+  }
+  for(var j=0;j<=5;j++){
+    var y=yMin+(yMax-yMin)*j/5;
+    body+=suitePath([[55,ty(y)],[640,ty(y)]],'suite-gridline')+suiteText([28,ty(y)+4],fmt(Number(y.toPrecision(3))));
+  }
+  body+=suitePath([[55,ty(0)],[640,ty(0)]],'suite-axis');
+  if(xMin<=0&&xMax>=0)body+=suitePath([[tx(0),36],[tx(0),330]],'suite-axis');
+  body+='<g clip-path="url(#suite-plot-clip)">';
+  tracks.forEach((run,index)=>{
+    var d='',previous=null,seriesItem=series[index];
+    run.forEach(([x,y])=>{
+      if(!Number.isFinite(y)||Math.abs(y)>1e12){previous=null;return;}
+      var cut=!previous||Math.abs(y-previous[1])>(yMax-yMin)*.85||seriesItem.split&&seriesItem.split(x)!==seriesItem.split(previous[0]);
+      d+=(cut?'M':'L')+tx(x).toFixed(3)+' '+ty(y).toFixed(3)+' ';
+      previous=[x,y];
+    });
+    body+='<path d="'+d+'" fill="none" stroke="'+suiteColors[index]+'" stroke-width="2.7"/>';
+  });
+  points.forEach(([x,y,label])=>{body+=suiteDot([tx(x),ty(y)])+(label?suiteText([tx(x)+13,ty(y)-10],label):'');});
+  body+='</g>'+suiteText([650,352],'x')+suiteText([55,21],'y');
+  return suiteGraphic('Đồ thị hàm số trên hệ trục tọa độ',body)+
+    '<ul class="suite-legend">'+series.map((entry,i)=>'<li><i style="background:'+suiteColors[i]+'"></i>'+esc(entry.label)+'</li>').join('')+'</ul>';
+}
+function suiteGraph(id,host) {
+  var quadratic=id==='ham-so-bac-2',power=id==='ham-so-luy-thua',log=id==='ham-so-logarit',trig=id==='ham-so-luong-giac';
+  var intersection=id==='mo-ta-su-tuong-giao',derivative=id==='mo-ta-dao-ham',limit=id==='mo-hinh-thao-tac-dong';
+  var coefficients=[['a','Hệ số a',1,-10000,10000],['b','Hệ số b',quadratic?-2:0,-10000,10000],['c','Hệ số c',quadratic?-3:0,-10000,10000]];
+  var fields=quadratic||derivative||intersection?coefficients:[];
+  if(intersection)fields=fields.concat([['d','Hệ số x² của g',0,-10000,10000],['m','Hệ số x của g',1,-10000,10000],['n','Hệ số tự do của g',0,-10000,10000]]);
+  if(power)fields=[['a','Hệ số a',1,-10000,10000],['n','Số mũ thực n',2,-16,16]];
+  if(log)fields=[['a','Cơ số a',2,.0001,10000]];
+  if(trig)fields=[['kind','Hàm lượng giác',[['sin','sin'],['cos','cos'],['tan','tan']]],
+    ['a','Hệ số ngoài hàm A',1,-100,100],['b','Hệ số góc B',1,-100,100],['c','Dịch pha C (rad)',0,-100,100],['d','Dịch dọc D',0,-100,100]];
+  if(limit)fields=[['kind','Hàm khảo sát',[['square','x²'],['abs','|x|'],['hole','(x² − 1)/(x − 1), x ≠ 1'],['jump','Bậc thang tại x = 0']]]];
+  if(!intersection)fields.push(['x0',derivative?'Hoành độ tiếp điểm x₀':limit?'Điểm tiến đến x₀':'Tính tại x₀',derivative||limit?2:log?4:0,-100,100]);
+  if(limit||derivative)fields.push(['h','Bước h',.1,.000001,10]);
+  fields.push(['left','Cận trái của trục x',-6,-100,100],['right','Cận phải của trục x',6,-100,100]);
+  suiteWorkbench(host,fields,v=>{
+    var number=(key,min,max)=>suiteNumber(v,key,min,max);
+    var a,b,c,fn,label,series=[],points=[],rows=[];
+    var xmin=number('left',-100,100),xmax=number('right',-100,100);
+    if(xmax<=xmin||xmax-xmin<.0001)throw Error('Cận phải phải lớn hơn cận trái ít nhất 0,0001.');
+    function polyLabel(symbol,a,b,c) {
+      var terms=[[a,'x²'],[b,'x'],[c,'']].filter(([n])=>n);
+      return symbol+' = '+(terms.length?terms.map(([n,variable],i)=>{
+        var magnitude=Math.abs(n);
+        return (n<0?(i?' − ':'−'):i?' + ':'')+(variable&&magnitude===1?'':fmt(magnitude))+variable;
+      }).join(''):'0');
+    }
+    if(quadratic||derivative||intersection){
+      a=number('a');b=number('b');c=number('c');
+      if(quadratic&&!a)throw Error('Để vẽ hàm số bậc hai, hệ số a phải khác 0.');
+      fn=x=>(a*x+b)*x+c;
+      label=polyLabel('f(x)',a,b,c);
+    }
+    if(power){
+      a=number('a'); var n=number('n',-16,16);
+      fn=x=>x<0&&!Number.isInteger(n)||x===0&&n<=0?NaN:a*x**n;
+      label='f(x) = '+fmt(a)+' × x^('+fmt(n)+')';
+      rows.push(['Miền xác định trên đồ thị',Number.isInteger(n)?n<=0?'x ≠ 0':'Mọi x thực':n>0?'x ≥ 0 theo mô hình lũy thừa thực':'x > 0 theo mô hình lũy thừa thực']);
+    }
+    if(log){
+      a=number('a',.0001,10000);
+      if(a===1)throw Error('Cơ số logarit phải khác 1.');
+      fn=x=>x>0?Math.log(x)/Math.log(a):NaN;
+      label='f(x) = log cơ số '+fmt(a)+' của x';
+      rows.push(['Miền xác định','x > 0'],['Giao điểm với Ox','(1; 0)']);
+    }
+    var split;
+    if(trig){
+      a=number('a');b=number('b');c=number('c');var shift=number('d');
+      var kind=v.kind, wave=Math[kind];
+      fn=x=>{
+        var angle=b*x+c;
+        return kind==='tan'&&Math.abs(Math.cos(angle))<1e-12?NaN:a*wave(angle)+shift;
+      };
+      if(kind==='tan')split=x=>Math.floor((b*x+c+Math.PI/2)/Math.PI);
+      label='f(x) = '+fmt(a)+' × '+kind+'('+fmt(b)+'x + ('+fmt(c)+')) + ('+fmt(shift)+')';
+      rows.push(['Chu kỳ cơ bản',a&&b?(kind==='tan'?Math.PI:2*Math.PI)/Math.abs(b):'Hàm hằng trên miền xác định']);
+    }
+    if(limit){
+      var definitions={
+        square:['f(x) = x²',x=>x*x],abs:['f(x) = |x|',x=>Math.abs(x)],
+        hole:['f(x) = (x² − 1)/(x − 1)',x=>x===1?NaN:x+1],
+        jump:['f(x) = −1 nếu x < 0, 1 nếu x ≥ 0',x=>x<0?-1:1]
+      };
+      [label,fn]=definitions[v.kind];
+      if(v.kind==='jump')split=x=>x<0?0:1;
+      if(v.kind==='hole')split=x=>x<1?0:1;
+    }
+    series.push({label,evaluate:fn,split});
+    if(intersection){
+      var d=number('d'),m=number('m'),n0=number('n');
+      var g=x=>(d*x+m)*x+n0;
+      series.push({label:polyLabel('g(x)',d,m,n0),evaluate:g});
+      var A=a-d,B=b-m,C=c-n0,delta=B*B-4*A*C;
+      var roots=A?(delta<0?[]:delta===0?[-B/(2*A)]:[(-B-Math.sqrt(delta))/(2*A),(-B+Math.sqrt(delta))/(2*A)]):B?[-C/B]:[];
+      var intersections=roots.filter(x=>Number.isFinite(x)&&Number.isFinite(fn(x)));
+      rows.push(['Giao điểm',!A&&!B&&!C?'Hai đồ thị trùng nhau':intersections.length?intersections.map(x=>'('+fmt(x)+'; '+fmt(fn(x))+')').join(' · '):'Không có giao điểm thực']);
+      points=intersections.filter(x=>x>=xmin&&x<=xmax).map((x,i)=>[x,fn(x),'I'+(i+1)]);
+    }else{
+      var x0=number('x0',-100,100),y0=fn(x0);
+      rows.push(['f('+fmt(x0)+')',Number.isFinite(y0)?y0:'Không xác định']);
+      if(Number.isFinite(y0)&&x0>=xmin&&x0<=xmax)points.push([x0,y0,'P']);
+      if(quadratic){
+        var vertex=-b/(2*a);
+        var discriminant=b*b-4*a*c;
+        var zeros=discriminant<0?[]:discriminant===0?[vertex]:[(-b-Math.sqrt(discriminant))/(2*a),(-b+Math.sqrt(discriminant))/(2*a)].sort((u,v)=>u-v);
+        rows.push(['Đỉnh I','('+fmt(vertex)+'; '+fmt(fn(vertex))+')'],
+          ['Giao điểm với Ox',zeros.length?zeros.map(x=>'('+fmt(x)+'; 0)').join(' · '):'Không có giao điểm']);
+        if(vertex>=xmin&&vertex<=xmax&&vertex!==x0)points.push([vertex,fn(vertex),'I']);
+        zeros.filter(x=>x>=xmin&&x<=xmax&&x!==x0&&x!==vertex).forEach(x=>points.push([x,0]));
+      }
+      if(derivative){
+        var h=number('h',.000001,10),slope=2*a*x0+b,secant=slope+a*h;
+        series.push({label:'Tiếp tuyến, hệ số góc '+fmt(slope),evaluate:x=>y0+slope*(x-x0)});
+        series.push({label:'Cát tuyến, h = '+fmt(h),evaluate:x=>y0+secant*(x-x0)});
+        rows.push(['Đạo hàm tại x₀',slope],['Hệ số góc cát tuyến',secant]);
+      }
+      if(limit){
+        var h=number('h',.000001,10),left=fn(x0-h),right=fn(x0+h);
+        if(x0-h>=xmin&&x0-h<=xmax&&Number.isFinite(left))points.push([x0-h,left,'L']);
+        if(x0+h>=xmin&&x0+h<=xmax&&Number.isFinite(right))points.push([x0+h,right,'R']);
+        rows.push(['f(x₀ − h)',fmt(left)],['f(x₀ + h)',fmt(right)]);
+        rows.push(['Giới hạn',v.kind==='jump'&&x0===0?'Không tồn tại. Bên trái → −1, bên phải → 1.':v.kind==='hole'&&x0===1?'2, dù f(1) không xác định.':fmt(y0)]);
+      }
+    }
+    return '<h2>Đồ thị và kết quả</h2>'+suitePlot(series,xmin,xmax,points)+suiteRows(rows);
+  },{action:'Vẽ lại',live:true,help:trig?'Nhập C và đọc trục x theo radian.':limit?'Giảm h để xem hai điểm tiến đến x₀ từ hai phía.':'Đổi thông số và đoạn x để khảo sát đồ thị.'});
+}
+
+function suiteGeometry(id,host) {
+  var length=(key,label,value)=>[key,label,value,.1,10000];
+  var angle=(key,label,value)=>[key,label,value,5,175];
+  var triangle=[length('a','Cạnh AB',6),length('b','Cạnh AC',4),angle('c','Góc A (°)',65)];
+  var shapes={
+    'tam-giac-deu':[[length('a','Cạnh AB',5)],v=>constructByMeasure('sss',[v.a,v.a,v.a])],
+    'tam-giac-vuong':[[length('a','Cạnh góc vuông AB',4),length('b','Cạnh góc vuông AC',3)],v=>constructByMeasure('sas',[v.a,v.b,90])],
+    'hinh-chu-nhat':[[length('a','Chiều dài AB',8),length('b','Chiều rộng BC',5)],v=>constructByMeasure('rectangle',[v.a,v.b])],
+    'hinh-thoi':[[length('a','Cạnh AB',5),angle('b','Góc A (°)',60)],v=>constructByMeasure('rhombus',[v.a,v.b])],
+    'hinh-binh-hanh':[[length('a','Cạnh AB',8),length('b','Cạnh AD',5),angle('c','Góc A (°)',60)],v=>constructByMeasure('parallelogram',[v.a,v.b,v.c])],
+    'hinh-thang-can':[[length('a','Đáy AB',8),length('b','Đáy CD',4),length('c','Chiều cao',3)],v=>constructByMeasure('trapezoid',[v.a,v.b,v.c,(v.a-v.b)/2])],
+    'da-giac':[[['n','Số cạnh',5,3,12,1],length('a','Độ dài một cạnh',4)],v=>constructByMeasure('regular',[v.n,v.a])],
+    'cac-duong-dac-biet-trong-tam-giac':[
+      [...triangle,['lines','Đường cần vẽ',[['median','Trung tuyến'],['height','Đường cao'],['bisector','Phân giác trong'],['perpendicular','Trung trực']]]],
+      v=>constructByMeasure('sas',[v.a,v.b,v.c])
+    ]
+  };
+  if(id==='hinh-hoc-3d'){suiteSolid(host);return;}
+  if(id==='hinh-doi-xung'||id==='cac-hinh-dong-dang'){suiteTransform(id,host,triangle);return;}
+  var [fields,construct]=shapes[id];
+  if(id==='hinh-chu-nhat'||id==='hinh-thoi')fields=[...fields,['diagonals','Đường chéo',[['yes','Hiện'],['no','Ẩn']]]];
+  suiteWorkbench(host,fields,values=>{
+    var numbers=Object.fromEntries(fields.filter(field=>typeof field[2]==='number').map(([key,label,,min,max])=>[key,suiteNumber(values,key,min,max)]));
+    var points=construct(numbers).points;
+    var {edges,angles}=measurePolygon(points);
+    var guides=[],extras=[],marks=[];
+    if(values.diagonals==='yes'){
+      guides.push([points[0],points[2]],[points[1],points[3]]);
+      extras.push(['Đường chéo AC',polygonDistance(...guides[0])],['Đường chéo BD',polygonDistance(...guides[1])]);
+    }
+    if(values.lines){
+      var result=suiteTriangleLines(points,values.lines);
+      guides=result.guides;
+      marks.push([result.center,result.label.at(-1)]);
+      extras.push([result.label,'('+fmt(result.center[0])+'; '+fmt(result.center[1])+')']);
+    }
+    var normalize=points[0];
+    var area=Math.abs(points.reduce((sum,p,i)=>sum+polygonCross(normalize,p,points[(i+1)%points.length]),0))/2;
+    var readings=points.map((p,i)=>[pointName(i)+pointName((i+1)%points.length),fmt(edges[i]),'∠'+pointName(i),fmt(angles[i])+'°']);
+    return '<h2>Hình và số đo</h2>'+suiteDiagram([{points}],guides,false,marks)+
+      suiteRows([['Chu vi',edges.reduce((sum,n)=>sum+n,0)],['Diện tích',area],['Tổng góc trong',(points.length-2)*180+'°'],...extras])+
+      suiteTable(['Cạnh','Độ dài','Góc','Số đo'],readings);
+  },{action:'Dựng hình',live:true});
+}
+
+function suiteDiagram(polygons,guides=[],axes=false,marks=[]) {
+  var points=polygons.flatMap(item=>item.points).concat(guides.flat());
+  if(axes)points.push([0,0]);
+  var xs=points.map(p=>p[0]),ys=points.map(p=>p[1]);
+  var x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  var scale=Math.min(526/(x1-x0||1),274/(y1-y0||1));
+  var project=([x,y])=>[340+(x-(x0+x1)/2)*scale,195-(y-(y0+y1)/2)*scale];
+  var [ox,oy]=project([0,0]);
+  var body=axes?suitePath([[28,oy],[652,oy]],'suite-axis')+suitePath([[ox,30],[ox,360]],'suite-axis')+
+    suiteText([642,oy-9],'x')+suiteText([ox+11,36],'y')+suiteText([ox+10,oy+16],'O'):'';
+  body+=polygons.map((item,index)=>suitePath(item.points.map(project),'suite-polygon suite-polygon-'+index,'polygon')).join('');
+  body+=guides.map(line=>suitePath(line.map(project),'suite-guide')).join('');
+  marks.forEach(([p,label])=>{
+    var [x,y]=project(p);
+    body+=suiteDot([x,y])+suiteText([x+12,y-8],label);
+  });
+  polygons.forEach((item,index)=>{
+    var screen=item.points.map(project);
+    var center=screen.reduce(([x,y],p)=>[x+p[0]/screen.length,y+p[1]/screen.length],[0,0]);
+    screen.forEach(([x,y],i)=>{
+      var dx=x-center[0],dy=y-center[1],norm=Math.hypot(dx,dy)||1;
+      body+=suiteDot([x,y])+suiteText([x+17*dx/norm,y+17*dy/norm+5],pointName(i)+(index?'′':''));
+    });
+  });
+  return suiteGraphic('Hình hình học có các đỉnh được đánh dấu',body);
+}
+
+function suiteTriangleLines(points,kind) {
+  var [a,b,c]=points;
+  var sides=[polygonDistance(b,c),polygonDistance(c,a),polygonDistance(a,b)];
+  var [m,n]=b,[x,y]=c;
+  var determinant=2*(m*y-n*x);
+  var circumcenter=[((m*m+n*n)*y-(x*x+y*y)*n)/determinant,(m*(x*x+y*y)-x*(m*m+n*n))/determinant];
+  var midpoint=(p,q)=>[(p[0]+q[0])/2,(p[1]+q[1])/2];
+  var weighted=weights=>points.reduce(([sx,sy],p,i)=>{
+    var total=weights.reduce((sum,k)=>sum+k,0);
+    return [sx+p[0]*weights[i]/total,sy+p[1]*weights[i]/total];
+  },[0,0]);
+  var configurations={
+    median:['Trọng tâm G',weighted([1,1,1])],
+    height:['Trực tâm H',[a[0]+b[0]+c[0]-2*circumcenter[0],a[1]+b[1]+c[1]-2*circumcenter[1]]],
+    bisector:['Tâm nội tiếp I',weighted(sides)],
+    perpendicular:['Tâm ngoại tiếp O',circumcenter]
+  };
+  var [label,center]=configurations[kind];
+  var guides=points.map((p,i)=>{
+    var j=(i+1)%3,k=(i+2)%3,q=points[j],r=points[k];
+    var dx=r[0]-q[0],dy=r[1]-q[1],middle=midpoint(q,r);
+    var foot=middle,start=p;
+    if(kind==='bisector'){
+      var ratio=sides[k]/(sides[j]+sides[k]);
+      foot=[q[0]+dx*ratio,q[1]+dy*ratio];
+    }
+    if(kind==='height'){
+      var t=((p[0]-q[0])*dx+(p[1]-q[1])*dy)/(dx*dx+dy*dy);
+      foot=[q[0]+t*dx,q[1]+t*dy];
+    }
+    if(kind==='perpendicular'){
+      start=middle;
+      var sign=Math.sign((center[0]-middle[0])*-dy+(center[1]-middle[1])*dx)||1;
+      foot=[middle[0]-dy*sign/3,middle[1]+dx*sign/3];
+    }
+    var direction=[foot[0]-start[0],foot[1]-start[1]];
+    var tCenter=((center[0]-start[0])*direction[0]+(center[1]-start[1])*direction[1])/(direction[0]**2+direction[1]**2);
+    if(tCenter<0)return [center,foot];
+    if(tCenter>1)return [start,center];
+    return [start,foot];
+  });
+  return {label,center,guides};
+}
+
+function suiteTransform(id,host,triangle) {
+  var symmetry=id==='hinh-doi-xung';
+  var fields=symmetry?[
+    ['axis','Trục đối xứng',[['vertical','Đường thẳng x = k'],['horizontal','Đường thẳng y = k']]],
+    ['k','Vị trí trục k',0,-100,100],['x','Hoành độ A',2,-100,100],['y','Tung độ A',1,-100,100]
+  ]:[...triangle,['ratio','Tỉ số k',2,.1,10]];
+  suiteWorkbench(host,fields,values=>{
+    if(symmetry){
+      var k=suiteNumber(values,'k',-100,100),x=suiteNumber(values,'x',-100,100),y=suiteNumber(values,'y',-100,100);
+      var vertical=values.axis==='vertical';
+      var points=[[x,y],[x+2,y],[x+.6,y+1.5]];
+      var reflected=points.map(([u,v])=>vertical?[2*k-u,v]:[u,2*k-v]);
+      var axis=vertical?[[k,y-1],[k,y+2.5]]:[[x-1,k],[x+3,k]];
+      var coordinates=points.map(([u,v],i)=>[pointName(i),'('+fmt(u)+'; '+fmt(v)+')','('+reflected[i].map(fmt).join('; ')+')']);
+      return '<h2>Hình và ảnh qua trục</h2>'+suiteDiagram([{points},{points:reflected}],[axis,...points.map((p,i)=>[p,reflected[i]])],true)+
+        suiteTable(['Đỉnh','Tọa độ ban đầu','Tọa độ ảnh'],coordinates);
+    }
+    var a=suiteNumber(values,'a',.1,10000),b=suiteNumber(values,'b',.1,10000),c=suiteNumber(values,'c',5,175),ratio=suiteNumber(values,'ratio',.1,10);
+    var {points}=constructByMeasure('sas',[a,b,c]);
+    var {edges,angles}=measurePolygon(points);
+    var offset=Math.max(...points.map(p=>p[0]))-Math.min(...points.map(p=>p[0]))*ratio+Math.max(a,b)*.22;
+    var enlarged=points.map(([x,y])=>[x*ratio+offset,y*ratio]);
+    return '<h2>Hai tam giác đồng dạng</h2>'+suiteDiagram([{points},{points:enlarged}])+suiteRows([['Tỉ số độ dài',ratio],['Tỉ số diện tích',ratio**2]])+
+      suiteTable(['Cạnh gốc','Độ dài','Cạnh tương ứng','Độ dài','Góc tương ứng'],edges.map((edge,i)=>{
+        var first=pointName(i),second=pointName((i+1)%3);
+        return [first+second,fmt(edge),first+'′'+second+'′',fmt(edge*ratio),fmt(angles[i])+'°'];
+      }));
+  },{action:'Dựng hình',live:true});
+}
+
+function suiteSolid(host) {
+  var kinds=[['cube','Hình lập phương'],['box','Hình hộp chữ nhật'],['pyramid','Hình chóp đáy chữ nhật'],
+    ['cylinder','Hình trụ'],['cone','Hình nón'],['sphere','Hình cầu']];
+  suiteWorkbench(host,[['shape','Khối hình',kinds],['a','Chiều dài cạnh hoặc bán kính',4,.1,10000],
+    ['b','Chiều rộng đáy',3,.1,10000],['h','Chiều cao',5,.1,10000],
+    ['turn','Góc xoay ngang',32,-180,180,1,'range'],['tilt','Góc nhìn từ trên',23,-85,85,1,'range']],values=>{
+    var kind=values.shape,a=suiteNumber(values,'a',.1,10000),b=suiteNumber(values,'b',.1,10000),h=suiteNumber(values,'h',.1,10000);
+    if(kind==='cube'){b=a;h=a;}
+    var turn=suiteNumber(values,'turn',-180,180)*radians,tilt=suiteNumber(values,'tilt',-85,85)*radians;
+    var vertices=[],faces=[],rows=[];
+    function ring(radius,z){
+      return Array.from({length:48},(_,i)=>[radius*Math.cos(i*Math.PI/24),radius*Math.sin(i*Math.PI/24),z]);
+    }
+    if(kind==='sphere'||kind==='cylinder'||kind==='cone'){
+      var levels=kind==='sphere'?Array.from({length:15},(_,i)=>{
+        var latitude=(i/14-.5)*Math.PI;
+        return ring(a*Math.cos(latitude),a*Math.sin(latitude));
+      }):[ring(a,-h/2),ring(kind==='cone'?0:a,h/2)];
+      levels.forEach((level,i)=>{
+        var start=vertices.length;
+        vertices.push(...level);
+        if(i)level.forEach((p,j)=>{
+          var next=(j+1)%level.length;
+          faces.push([start+j-level.length,start+next-level.length,start+next,start+j]);
+        });
+      });
+      if(kind!=='sphere')faces.push(levels[0].map((p,i)=>i),levels[1].map((p,i)=>i+levels[0].length));
+      var volumes={sphere:4*Math.PI*a**3/3,cylinder:Math.PI*a*a*h,cone:Math.PI*a*a*h/3};
+      var surfaces={sphere:4*Math.PI*a*a,cylinder:2*Math.PI*a*(a+h),cone:Math.PI*a*(a+Math.hypot(a,h))};
+      rows=[['Thể tích',volumes[kind]],['Diện tích toàn phần',surfaces[kind]]];
+    }else{
+      var base=[[-a/2,-b/2],[a/2,-b/2],[a/2,b/2],[-a/2,b/2]];
+      var pyramid=kind==='pyramid';
+      vertices=base.map(p=>[...p,-h/2]).concat(pyramid?[[0,0,h/2]]:base.map(p=>[...p,h/2]));
+      faces=[[0,1,2,3],...base.map((p,i)=>{
+        var next=(i+1)%4;
+        return pyramid?[i,next,4]:[i,next,next+4,i+4];
+      })];
+      if(!pyramid)faces.push([4,5,6,7]);
+      rows=[['Số mặt',faces.length],['Số cạnh',pyramid?8:12],['Số đỉnh',vertices.length],
+        ['Thể tích',a*b*h/(pyramid?3:1)],
+        ['Diện tích toàn phần',pyramid?a*b+a*Math.hypot(h,b/2)+b*Math.hypot(h,a/2):2*(a*b+a*h+b*h)]];
+    }
+    var projected=vertices.map(([x,y,z])=>{
+      var depth=x*Math.sin(turn)+y*Math.cos(turn);
+      return [x*Math.cos(turn)-y*Math.sin(turn),z*Math.cos(tilt)-depth*Math.sin(tilt),depth*Math.cos(tilt)+z*Math.sin(tilt)];
+    });
+    var scale=145/Math.max(...projected.flatMap(([x,y])=>[Math.abs(x),Math.abs(y)]));
+    var depth=face=>face.reduce((sum,i)=>sum+projected[i][2]/face.length,0);
+    var body=faces.map((face,i)=>({face,i,depth:depth(face)})).sort((a,b)=>a.depth-b.depth)
+      .map(({face,i})=>suitePath(face.map(index=>[340+projected[index][0]*scale,195-projected[index][1]*scale]),
+        (kind==='sphere'||kind==='cylinder'||kind==='cone'?'suite-surface':'suite-face')+' suite-face-'+i%4,'polygon')).join('');
+    return '<h2>'+esc(kinds.find(item=>item[0]===kind)[1])+'</h2>'+suiteGraphic('Mô hình khối hình học nhìn theo góc đã chọn',body)+suiteRows(rows);
+  },{action:'Cập nhật hình',live:true,help:'Đổi góc xoay để quan sát khối. Hình cầu dùng bán kính. Hình trụ và hình nón dùng bán kính và chiều cao.'});
+}
+
 function originalPage(){
   var tool=originalTools.find(item=>item.id===state.suite);
-  var suite=tool.suite;
-  var origin='http://127.0.0.1:'+suite.port;
-  var url=origin+'/dashboard/'+suite.base+'/'+tool.id;
-  var related=originalTools.filter(item=>item.topic===tool.topic);
+  var related=originalTools.filter(item=>item.suite===tool.suite);
   app.innerHTML='<div class="original-heading"><div class="page-title"><h1>'+esc(tool.name)+'</h1></div>'+
-    '<div class="filter-bar"><button class="btn outline" type="button" data-topic="'+esc(tool.topic)+'">← '+esc(tool.topic)+'</button>'+
+    '<div class="filter-bar"><button class="btn outline" type="button" data-original-suite="'+esc(tool.suite.base)+'">← '+esc(tool.suite.label)+'</button>'+
     filterSelect('original-tool-select','Trong bộ công cụ',related.map(item=>[item.id,item.name]),tool.id)+'</div></div>'+
     exampleCard(originalExamples[tool.id],'Thử với ví dụ này',true)+
-    '<div id="original-content" aria-busy="true"><p role="status">Đang kết nối…</p></div>';
-  var content=document.getElementById('original-content');
-  fetch(origin+'/__gdvn_ready',{cache:'no-store',signal:AbortSignal.timeout(3000)})
-    .then(async function(response){
-      if(!response.ok||await response.text()!=='GDVN:'+suite.port)throw Error('Bộ công cụ chưa sẵn sàng');
-      if(!content.isConnected)return;
-      content.innerHTML='<iframe class="original-frame" title="'+esc(tool.name)+'" src="'+esc(url)+'" allowfullscreen></iframe>';
-    })
-    .catch(function(){
-      if(!content.isConnected)return;
-      content.innerHTML='<div class="empty" role="status"><strong>Chưa kết nối được với '+esc(suite.label)+'.</strong>'+
-        '<p>Chạy <code>Mo-bo-cong-cu-goc.cmd</code> trong thư mục <code>source</code>, rồi bấm Thử lại.</p>'+
-        '<button class="btn outline" type="button" id="retry-original">Thử lại</button></div>';
-      content.querySelector('#retry-original').addEventListener('click',originalPage);
-    })
-    .finally(function(){content.removeAttribute('aria-busy');});
+    '<div id="original-content"></div>';
+  var host=document.getElementById('original-content');
+  var id=tool.id.split('/').at(-1);
+  var renderTool={
+    'hinh-hoc-va-do-luong':suiteGeometry,
+    'bieu-do':suiteChart,
+    'thong-ke':suiteStatistics,
+    'xac-suat':suiteProbability,
+    'minh-hoa-bai-toan':suiteRandom
+  };
+  var category=tool.suite.geometry?tool.suite.base:tool.id.split('/')[0];
+  (renderTool[category]||suiteGraph)(id,host);
 }
 
 function home(){
