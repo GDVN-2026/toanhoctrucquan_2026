@@ -440,7 +440,7 @@ a.btn { display: inline-flex; align-items: center; text-decoration: none; }
 #board-message:not(:empty), .board-error { color: #a22138; padding: 7px 0; }
 .dark #board-message:not(:empty), .dark .board-error { color: #ffa3ad; }
 #construction-svg { display: block; width: 100%; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); }
-#construction-svg.board-point-mode { cursor: crosshair; touch-action: manipulation; }
+#construction-svg:is(.board-point-mode,.board-cut-mode) { cursor: crosshair; touch-action: manipulation; }
 #construction-svg pattern path { stroke: var(--line); fill: none; }
 #construction-svg text { fill: var(--ink); font: 600 15px system-ui,sans-serif; paint-order: stroke; stroke: var(--panel); stroke-width: 3px; stroke-linejoin: round; }
 #construction-svg .board-degree { fill: #a22138; }
@@ -451,6 +451,24 @@ a.btn { display: inline-flex; align-items: center; text-decoration: none; }
 .board-dot { fill: var(--blue); }
 .board-angle { stroke: #e36073; fill: none; stroke-width: 2px; }
 .board-radius { stroke: var(--blue); stroke-dasharray: 6 4; }
+.board-cut-line, .board-cut-inside { stroke: #8b3ca7; stroke-width: 2; }
+.board-cut-line { stroke-dasharray: 7 5; }
+.board-cut-inside { stroke-width: 3; }
+.board-cut-dot { fill: #8b3ca7; }
+.dark :is(.board-cut-line,.board-cut-inside) { stroke: #e2a3fb; }
+.dark .board-cut-dot { fill: #e2a3fb; }
+#construction-svg .board-cut-label { fill: #6f278a; }
+.dark #construction-svg .board-cut-label { fill: #e2a3fb; }
+.board-cut-reading { margin: 8px 0; color: var(--ink); font-size: .92rem; }
+#board-edit-form, #board-cut-input { margin: 0 0 10px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; }
+#board-cut-input summary { cursor: pointer; color: var(--blue); }
+#board-edit-form label { display: grid; gap: 4px; min-width: 0; }
+#board-edit-form .fields { grid-template-columns: repeat(auto-fit,minmax(min(100%,100px),1fr)); }
+#board-edit-form :is(input,select), #board-cut-form input {
+  width: 100%; min-width: 0; min-height: 39px; padding: 6px 8px;
+  border: 1px solid var(--line); border-radius: 7px; background: var(--soft); color: var(--ink); font: inherit;
+}
+#board-cut-form { margin-top: 8px; }
 .board-meta { display: grid; grid-template-columns: repeat(auto-fit,minmax(72px,1fr)); gap: 8px; margin-top: 12px; }
 .board-readings { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
 .board-readings li { background: var(--soft); border-radius: 6px; padding: 5px 8px; font-size: .9rem; }

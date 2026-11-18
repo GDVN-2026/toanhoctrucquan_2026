@@ -2626,7 +2626,10 @@ var constructionTypes = {
   regular: ['Đa giác đều', [['Số cạnh', 5], ['Độ dài cạnh', 4]]],
   circle: ['Đường tròn', [['Bán kính', 4]]]
 };
-var constructionState = {mode:'dimensions', type:'sss', points:[], closed:false, drafts:{}, names:[], unit:'đv', formula:'', shape:null, message:''};
+var constructionState = {
+  mode:'dimensions', type:'sss', points:[], closed:false, drafts:{}, names:[], unit:'đv', formula:'', shape:null, message:'',
+  cut:null, lastPoints:null
+};
 var numberWorkspaceTool = 'fraction';
 var radians = Math.PI / 180;
 var polygonDistance = (a,b) => Math.hypot(a[0]-b[0], a[1]-b[1]);
@@ -2727,15 +2730,84 @@ function boardSelect(label,options) {
   return '<label>'+esc(label)+'<select>'+options.map(([key,name])=>'<option value="'+esc(key)+'">'+esc(name)+'</option>').join('')+'</select></label>';
 }
 
+function cutConstruction(shape, first, second) {
+  var [x,y]=first;
+  var distance=polygonDistance(first,second);
+  var size=shape.kind==='circle'?shape.r:Math.max(...shape.edges);
+  if (!Number.isFinite(distance)||distance<=size*1e-10) throw Error('Chọn hai điểm phân biệt để xác định đường thẳng.');
+  var ux=(second[0]-x)/distance, uy=(second[1]-y)/distance;
+  // Dùng một gốc gần hình để tham số giao điểm không phụ thuộc vị trí người dùng bấm.
+  var [ox,oy]=shape.points[0]||[0,0];
+  var offset=(x-ox)*uy-(y-oy)*ux;
+  var point=t=>[ox+offset*uy+t*ux,oy-offset*ux+t*uy];
+  var tolerance=size*1e-9;
+  if (shape.kind==='circle') {
+    if (Math.abs(offset)>=shape.r-tolerance) throw Error('Đường thẳng cần đi qua phần trong của hình tròn.');
+    var half=Math.sqrt((shape.r-offset)*(shape.r+offset));
+    return {points:[point(-half),point(half)], intervals:[[0,1]], lengths:[2*half]};
+  }
+  var side=([px,py])=>(px-ox)*uy-(py-oy)*ux-offset;
+  var parameter=([px,py])=>(px-ox)*ux+(py-oy)*uy;
+  var values=[];
+  shape.points.forEach((a,i)=>{
+    var b=shape.points[(i+1)%shape.points.length];
+    var sa=side(a),sb=side(b);
+    if (Math.abs(sa)<=tolerance&&Math.abs(sb)<=tolerance) {
+      throw Error('Đường thẳng trùng với một cạnh. Hãy chọn đường đi qua phần trong của hình.');
+    }
+    if (Math.abs(sa)<=tolerance) values.push(parameter(a));
+    else if (Math.abs(sb)<=tolerance) values.push(parameter(b));
+    else if (Math.sign(sa)!==Math.sign(sb)) {
+      var t=sa/(sa-sb);
+      values.push(parameter(a)+(parameter(b)-parameter(a))*t);
+    }
+  });
+  var intersections=values.sort((a,b)=>a-b).filter((t,i)=>!i||t-values[i-1]>tolerance);
+  function inside([px,py]) {
+    var result=false;
+    shape.points.forEach(([ax,ay],i)=>{
+      var [bx,by]=shape.points[(i+1)%shape.points.length];
+      if ((ay>py)!==(by>py)&&px<ax+(bx-ax)*(py-ay)/(by-ay)) result=!result;
+    });
+    return result;
+  }
+  var intervals=[],lengths=[];
+  intersections.slice(1).forEach((end,i)=>{
+    var start=intersections[i];
+    if (!inside(point(start+(end-start)/2))) return;
+    intervals.push([i,i+1]);
+    lengths.push(end-start);
+  });
+  if (!intervals.length) throw Error('Đường thẳng cần đi qua phần trong của hình, không chỉ chạm biên.');
+  return {points:intersections.map(point),intervals,lengths};
+}
+
+function changeConstructionMeasures(shape, method, values, edgeIndex) {
+  var [anchor,second]=shape.points;
+  var edited;
+  if (method==='scale') {
+    if (values[0]<=0) throw Error('Độ dài cạnh phải lớn hơn 0.');
+    var factor=values[0]/shape.edges[edgeIndex];
+    edited=shape.points.map(([x,y])=>[anchor[0]+(x-anchor[0])*factor,anchor[1]+(y-anchor[1])*factor]);
+  } else {
+    var built=constructByMeasure(method,values);
+    var dx=(second[0]-anchor[0])/shape.edges[0],dy=(second[1]-anchor[1])/shape.edges[0];
+    var orientation=Math.sign(polygonCross(...shape.points));
+    edited=built.points.map(([x,y])=>[anchor[0]+x*dx-y*dy*orientation,anchor[1]+x*dy+y*dx*orientation]);
+  }
+  if (edited.some(p=>p.some(v=>!Number.isFinite(v)))) throw Error('Số đo vượt phạm vi có thể vẽ.');
+  return {kind:shape.kind,points:edited,...measurePolygon(edited)};
+}
+
 function constructionPage() {
   var model = constructionState;
   app.innerHTML = '<div class="page-title"><h1>Bảng dựng hình</h1></div><div class="math-board">'+
     '<section class="panel board-drawing"><div class="board-actions" role="group" aria-label="Cách dựng">'+
     '<button type="button" class="btn outline" data-board-mode="dimensions">Nhập số đo</button>'+
     '<button type="button" class="btn outline" data-board-mode="points">Đặt điểm</button></div>'+
-    '<div class="board-toolbar" id="board-toolbar"></div><div id="board-message" role="status"></div>'+
+    '<div class="board-toolbar" id="board-toolbar"></div><div id="board-geometry-actions"></div><div id="board-message" role="status"></div>'+
     '<svg id="construction-svg" viewBox="0 0 640 400" role="img" aria-label="Bảng vẽ hình học"></svg>'+
-    '<div id="board-measures"></div><div id="board-example"></div></section>'+
+    '<div id="board-cut-result" aria-live="polite"></div><div id="board-measures"></div><div id="board-example"></div></section>'+
     '<section class="panel board-math"><h2>Công thức của hình</h2><div class="board-actions" role="group" aria-label="Chọn công thức">'+
     '<button class="btn outline" type="button" data-board-formula="perimeter">Chu vi</button>'+
     '<button class="btn outline" type="button" data-board-formula="area">Diện tích</button></div><div id="board-calculation"></div></section></div>';
@@ -2743,8 +2815,11 @@ function constructionPage() {
   var example = app.querySelector('#board-example');
   var message = app.querySelector('#board-message');
   var svg = app.querySelector('#construction-svg');
+  var geometryActions=app.querySelector('#board-geometry-actions');
+  var cutResult=app.querySelector('#board-cut-result');
   var measures = app.querySelector('#board-measures');
   var calculation = app.querySelector('#board-calculation');
+  var pendingCut=null, placingCut=false, project, unproject, gridStep;
   function names() { return model.shape?.points.map((_,i)=>model.names[i]||pointName(i))||[]; }
   function currentLabels() {
     if (model.mode==='dimensions') return constructionTypes[model.type][0];
@@ -2754,17 +2829,34 @@ function constructionPage() {
     message.textContent = model.message;
     var shape = model.shape;
     var points = shape?.points || (model.mode==='points'?model.points:[]);
-    var screen = points;
-    if (model.mode==='dimensions' && points.length) {
+    var cx=0,cy=0,scale=32;
+    if (shape?.kind==='circle') scale=126/shape.r;
+    else if (points.length&&(model.mode==='dimensions'||
+      points.some(([x,y])=>Math.abs(x)>9||Math.abs(y)>5.3)||
+      (model.lastPoints&&model.closed&&Math.max(...shape.edges)<2))) {
       var minX=Math.min(...points.map(p=>p[0])), maxX=Math.max(...points.map(p=>p[0]));
       var minY=Math.min(...points.map(p=>p[1])), maxY=Math.max(...points.map(p=>p[1]));
-      var scale=Math.min(450/(maxX-minX),245/(maxY-minY));
-      screen = points.map(([x,y])=>[320+(x-(minX+maxX)/2)*scale,200-(y-(minY+maxY)/2)*scale]);
-    } else if (model.mode==='points') screen = points.map(([x,y])=>[320+x*32,200-y*32]);
+      if(maxX>minX||maxY>minY)scale=Math.min(450/(maxX-minX),245/(maxY-minY));
+      cx=minX+(maxX-minX)/2;
+      cy=minY+(maxY-minY)/2;
+    }
+    project=([x,y])=>[320+(x-cx)*scale,200-(y-cy)*scale];
+    unproject=([x,y])=>[cx+(x-320)/scale,cy+(200-y)/scale];
+    var screen=points.map(project);
     var labels = names();
     var line = screen.map(p=>p.join(',')).join(' ');
-    var parts = ['<defs><pattern id="board-grid" x="0" y="8" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M 32 0 H 0 V 32"/></pattern></defs><rect width="640" height="400" fill="url(#board-grid)"/>'];
-    if (model.mode==='points') parts.push('<path class="board-axes" d="M0 200H640M320 0V400"/><text x="328" y="216">0</text>');
+    gridStep=scale===32?1:10**Math.floor(Math.log10(48/scale));
+    var showAxes=model.mode==='points'||placingCut||Boolean(model.cut);
+    var spacing=showAxes?gridStep*scale:32;
+    var [axisX,axisY]=project([0,0]);
+    var gridX=showAxes?(axisX%spacing+spacing)%spacing:0;
+    var gridY=showAxes?(axisY%spacing+spacing)%spacing:8;
+    var parts=['<defs><pattern id="board-grid" x="'+gridX+'" y="'+gridY+'" width="'+spacing+'" height="'+spacing+'" patternUnits="userSpaceOnUse"><path d="M '+spacing+' 0 H 0 V '+spacing+'"/></pattern></defs><rect width="640" height="400" fill="url(#board-grid)"/>'];
+    if (showAxes) {
+      if(axisY>=0&&axisY<=400)parts.push('<path class="board-axes" d="M0 '+axisY+'H640"/>');
+      if(axisX>=0&&axisX<=640)parts.push('<path class="board-axes" d="M'+axisX+' 0V400"/>');
+      if(shape?.kind!=='circle'&&axisX>=0&&axisX<625&&axisY>=0&&axisY<380)parts.push('<text x="'+(axisX+8)+'" y="'+(axisY+16)+'">0</text>');
+    }
     if (shape?.kind==='circle') {
       parts.push('<circle class="board-shape" cx="320" cy="200" r="126"/><path class="board-radius" d="M320 200h126"/><circle class="board-dot" cx="320" cy="200" r="4"/><text x="302" y="223">O</text><text x="355" y="190">r = '+fmt(shape.r)+'</text>');
     } else if (screen.length) {
@@ -2793,8 +2885,89 @@ function constructionPage() {
         parts.push('<text class="board-length" text-anchor="middle" x="'+mx+'" y="'+(my+4)+'">'+fmt(Math.round(shape.edges[i]*100)/100)+'</text>');
       });
     }
+    if (model.cut&&shape) {
+      var crosses=model.cut.points.map(project);
+      var a=crosses[0], b=crosses.at(-1);
+      var d=polygonDistance(a,b),dx=(b[0]-a[0])*800/d,dy=(b[1]-a[1])*800/d;
+      var cutLine=(p,q,css)=>'<line class="'+css+'" x1="'+p[0]+'" y1="'+p[1]+'" x2="'+q[0]+'" y2="'+q[1]+'"/>';
+      parts.push(cutLine([a[0]-dx,a[1]-dy],[b[0]+dx,b[1]+dy],'board-cut-line'));
+      model.cut.intervals.forEach(([i,j])=>parts.push(cutLine(crosses[i],crosses[j],'board-cut-inside')));
+      crosses.forEach(([x,y],i)=>parts.push('<circle class="board-cut-dot" cx="'+x+'" cy="'+y+'" r="4"/>'+
+        '<text class="board-cut-label" x="'+(x+7)+'" y="'+(y-10)+'">'+intersectionName(i)+'</text>'));
+    }
+    if(pendingCut){
+      var [px,py]=project(pendingCut);
+      parts.push('<circle class="board-cut-dot" cx="'+px+'" cy="'+py+'" r="5"/>');
+    }
+    svg.classList.toggle('board-cut-mode',placingCut);
     svg.innerHTML = parts.join('');
     svg.setAttribute('aria-label',shape?currentLabels():'Bảng vẽ hình học');
+    cutResult.innerHTML=model.cut?'<p class="board-cut-reading"><strong>Đoạn trong hình</strong> '+
+      model.cut.intervals.map(([i,j],index)=>intersectionName(i)+intersectionName(j)+' = '+fmt(model.cut.lengths[index])+' '+esc(model.unit)).join(' · ')+'</p>':'';
+  }
+  function intersectionName(i) { return 'G'+String(i+1).replace(/\d/g,d=>String.fromCharCode(8320+Number(d))); }
+  function renderGeometryActions() {
+    var shape=model.shape;
+    if(!shape){geometryActions.innerHTML='';return;}
+    var editable=model.mode==='points'&&model.closed;
+    geometryActions.innerHTML='<div class="board-actions">'+
+      '<button class="btn outline" type="button" id="board-cut-toggle" aria-pressed="false">Đường cắt</button>'+
+      '<button class="btn outline" type="button" id="board-cut-clear" '+(model.cut?'':'hidden')+'>Xóa đường cắt</button>'+
+      (editable?'<button class="btn outline" type="button" id="board-edit-toggle" aria-expanded="false">Đặt số đo</button>':'')+
+      (editable&&model.lastPoints?'<button class="btn outline" type="button" id="board-restore-measures">Khôi phục hình trước</button>':'')+
+    '</div><details id="board-cut-input" hidden><summary>Nhập tọa độ hai điểm</summary>'+
+      '<form id="board-cut-form" class="board-toolbar">'+
+      '<p class="calc-note">Dùng tọa độ trên lưới. Trục x hướng sang phải, trục y hướng lên.</p>'+
+      '<div class="fields">'+['x₁','y₁','x₂','y₂'].map((label,i)=>'<label>'+label+
+        '<input type="number" name="coord" step="any" required aria-label="'+['Hoành độ điểm thứ nhất','Tung độ điểm thứ nhất','Hoành độ điểm thứ hai','Tung độ điểm thứ hai'][i]+'"></label>').join('')+
+      '</div><button class="btn blue" type="submit">Vẽ đường cắt</button></form></details><div id="board-edit-measures" hidden></div>';
+  }
+  function stageCut(first,second) {
+    try{
+      model.cut=cutConstruction(model.shape,first,second);
+      placingCut=false;
+      geometryActions.querySelector('#board-cut-toggle').setAttribute('aria-pressed','false');
+      geometryActions.querySelector('#board-cut-clear').hidden=false;
+      geometryActions.querySelector('#board-cut-input').hidden=true;
+      model.message='';
+    }catch(error){model.message=error.message+' Chọn lại hai điểm.';}
+    pendingCut=null;
+    updateDrawing();
+  }
+  function cutHint() {
+    model.message=pendingCut?'Bấm điểm thứ hai để xác định đường thẳng.':'Bấm hai điểm trên bảng để xác định đường thẳng. Có thể chọn cả điểm ngoài hình.';
+  }
+  function renderMeasureFields(form) {
+    var shape=model.shape, labels=names();
+    var method=form.elements.method.value;
+    var edge=i=>labels[i]+' → '+labels[(i+1)%labels.length];
+    var options=shape.edges.map((value,i)=>'<option value="'+i+'">'+esc(edge(i))+'</option>').join('');
+    var fields={
+      sss:[[edge(0),shape.edges[0]],[edge(1),shape.edges[1]],[edge(2),shape.edges[2]]],
+      sas:[[edge(0),shape.edges[0]],[edge(2),shape.edges[2]],['Góc '+labels[0]+' (°)',shape.angles[0]]],
+      asa:[[edge(0),shape.edges[0]],['Góc '+labels[0]+' (°)',shape.angles[0]],['Góc '+labels[1]+' (°)',shape.angles[1]]],
+      scale:[['Độ dài mới',shape.edges[0]]]
+    };
+    var restrictions={
+      sss:'Ba cạnh phải dương. Tổng hai cạnh ngắn phải lớn hơn cạnh dài nhất.',
+      sas:'Hai cạnh phải dương. Góc xen giữa phải lớn hơn 0° và nhỏ hơn 180°.',
+      asa:'Cạnh phải dương. Hai góc kề phải dương và có tổng nhỏ hơn 180°.',
+      scale:'Đổi độ dài một cạnh theo tỉ lệ. Các cạnh cùng thay đổi theo tỉ lệ đó và các góc được giữ nguyên.'
+    };
+    form.querySelector('.board-constraint-fields').innerHTML=(method==='scale'?'<label>Cạnh dùng để đổi tỉ lệ<select name="edge">'+options+'</select></label>':'')+
+      '<div class="fields">'+fields[method].map(([label,value])=>'<label>'+esc(label)+
+        '<input name="measure" type="number" step="any" required value="'+Number(value.toPrecision(12))+'"></label>').join('')+'</div>'+
+      '<p class="calc-note">'+restrictions[method]+'</p>';
+  }
+  function renderMeasureEditor() {
+    var host=geometryActions.querySelector('#board-edit-measures');
+    var methods=model.shape.kind==='triangle'?[
+      ['sss','Ba cạnh'],['sas','Hai cạnh và góc xen giữa'],['asa','Một cạnh và hai góc kề']
+    ]:[['scale','Đổi tỉ lệ theo một cạnh']];
+    host.innerHTML='<form id="board-edit-form">'+
+      '<label>Dữ kiện dựng hình <select name="method">'+methods.map(([key,label])=>'<option value="'+key+'">'+label+'</option>').join('')+
+      '</select></label><div class="board-constraint-fields"></div><button class="btn blue" type="submit">Áp dụng số đo</button></form>';
+    renderMeasureFields(host.querySelector('form'));
   }
   function updateMeasures() {
     var shape=model.shape;
@@ -2806,7 +2979,14 @@ function constructionPage() {
         '<ul class="board-readings">'+labels.map((name,i)=>'<li><strong>'+esc(name)+' → '+esc(labels[(i+1)%labels.length])+'</strong> '+fmt(shape.edges[i])+' '+esc(model.unit)+' <span>∠'+esc(name)+' = '+fmt(shape.angles[i])+'°</span></li>').join('')+'</ul>');
   }
   function showShape(shape) {
+    var old=model.shape;
+    var same=shape&&old&&shape.kind===old.kind&&shape.r===old.r&&shape.points.length===old.points.length&&
+      shape.points.every(([x,y],i)=>x===old.points[i][0]&&y===old.points[i][1]);
+    if(!same)model.cut=null;
+    pendingCut=null;
+    placingCut=false;
     model.shape=shape;
+    renderGeometryActions();
     updateDrawing();
     updateMeasures();
     updateCalculation();
@@ -2879,7 +3059,7 @@ function constructionPage() {
   function enterMode() {
     model.message='';
     renderToolbar();
-    if (model.mode==='dimensions') drawDimensions();
+      if (model.mode==='dimensions') drawDimensions();
     else if (model.closed) closePolygon();
     else showShape(null);
   }
@@ -2903,13 +3083,49 @@ function constructionPage() {
       addPoint(Number(data.get('x')),Number(data.get('y')));
     }
   });
+  geometryActions.addEventListener('change',event=>{
+    var input=event.target;
+    if (input.name==='method') renderMeasureFields(input.form);
+    if (input.name==='edge') input.form.querySelector('[name="measure"]').value=Number(model.shape.edges[Number(input.value)].toPrecision(12));
+  });
+  geometryActions.addEventListener('submit',event=>{
+    event.preventDefault();
+    var form=event.target,data=new FormData(form);
+    if(form.id==='board-cut-form'){
+      var coords=data.getAll('coord').map(Number);
+      stageCut(coords.slice(0,2),coords.slice(2));
+      if(!placingCut)geometryActions.querySelector('#board-cut-toggle').focus();
+      return;
+    }
+    try{
+      var values=data.getAll('measure').map(value=>numeric(value,'số đo'));
+      var next=changeConstructionMeasures(model.shape,data.get('method'),values,Number(data.get('edge')));
+      model.lastPoints=model.points;
+      model.points=next.points;
+      model.message='Đã cập nhật hình và tính lại số đo.';
+      showShape(next);
+      geometryActions.querySelector('#board-edit-toggle').focus();
+    }catch(error){
+      model.message=error.message+' Hình hiện tại được giữ lại.';
+      updateDrawing();
+    }
+  });
   svg.addEventListener('click',event=>{
-    if (model.mode!=='points'||model.closed) return;
+    if(!placingCut&&(model.mode!=='points'||model.closed))return;
     var point=new DOMPoint(event.clientX,event.clientY).matrixTransform(svg.getScreenCTM().inverse());
-    var x=(point.x-320)/32, y=(200-point.y)/32;
-    var existing=model.points.find(p=>polygonDistance(p,[x,y])<.4);
+    var coordinates=unproject([point.x,point.y]);
+    if(placingCut){
+      var vertex=model.shape.points.find(p=>polygonDistance(project(p),[point.x,point.y])<=8);
+      var selected=vertex||coordinates;
+      if(pendingCut)stageCut(pendingCut,selected);
+      else{pendingCut=selected;cutHint();updateDrawing();}
+      return;
+    }
+    var existing=model.points.find(p=>polygonDistance(project(p),[point.x,point.y])<12.8);
     if (existing) addPoint(...existing);
-    else if (Math.abs(x)<=9.5&&Math.abs(y)<=5.5) addPoint(Math.round(x),Math.round(y));
+    else if(point.x>=16&&point.x<=624&&point.y>=24&&point.y<=376) {
+      addPoint(...coordinates.map(value=>Number((Math.round(value/gridStep)*gridStep).toPrecision(12))));
+    }
   });
   measures.addEventListener('change',event=>{
     var input=event.target;
@@ -2925,7 +3141,8 @@ function constructionPage() {
       }
       model.names[i]=name;
     } else return;
-    model.message='';
+    if(placingCut)cutHint();
+    else model.message='';
     updateDrawing();
     updateMeasures();
     updateCalculation();
@@ -2937,6 +3154,31 @@ function constructionPage() {
       if (model.mode==='dimensions') model.drafts[model.type]=Array.from(toolbar.querySelectorAll('[data-dimension]'),input=>input.value);
       model.mode=button.dataset.boardMode;
       enterMode();
+    } else if (button.id==='board-cut-toggle') {
+      placingCut=!placingCut;
+      pendingCut=null;
+      button.setAttribute('aria-pressed',String(placingCut));
+      geometryActions.querySelector('#board-cut-input').hidden=!placingCut;
+      if(placingCut)cutHint();
+      else model.message='';
+      updateDrawing();
+    } else if (button.id==='board-cut-clear') {
+      model.cut=null;
+      button.hidden=true;
+      if(placingCut)cutHint();
+      else model.message='';
+      updateDrawing();
+      geometryActions.querySelector('#board-cut-toggle').focus();
+    } else if (button.id==='board-edit-toggle') {
+      var editor=geometryActions.querySelector('#board-edit-measures');
+      editor.hidden=!editor.hidden;
+      button.setAttribute('aria-expanded',String(!editor.hidden));
+      if(!editor.hidden){renderMeasureEditor();editor.querySelector('select').focus();}
+    } else if (button.id==='board-restore-measures') {
+      model.points=model.lastPoints;
+      model.lastPoints=null;
+      closePolygon();
+      geometryActions.querySelector('#board-edit-toggle').focus();
     } else if (button.id==='board-load-example') {
       if(model.mode==='dimensions'){
         model.drafts[model.type]=constructionTypes[model.type][1].map(([,value])=>String(value));
@@ -2946,6 +3188,7 @@ function constructionPage() {
         model.points=[[0,0],[4,0],[0,3]];
         model.closed=false;
         model.names=[];
+        model.lastPoints=null;
         closePolygon();
       }
     } else if (button.dataset.boardFormula) {
@@ -2956,6 +3199,7 @@ function constructionPage() {
       if (button.id==='board-clear') { model.points=[]; model.names=[]; }
       else if (!model.closed) model.points.pop();
       model.closed=false;
+      model.lastPoints=null;
       enterMode();
       toolbar.querySelector('#'+button.id).focus();
     }
