@@ -666,7 +666,8 @@ var tools=[
 var state={page:'home',mode:'number',suite:'',cat:'all',query:'',tool:'',favs:[]};
 try{state.favs=JSON.parse(localStorage.getItem('mathlab-favs-v1')||'[]');if(!Array.isArray(state.favs))state.favs=[];}catch(e){state.favs=[];}
 try{if(localStorage.getItem('gdvn-math-mode')==='geometry')state.mode='geometry';}catch(e){}
-if(new URLSearchParams(location.search).get('tool')==='spatial'){
+var entryParams=new URLSearchParams(location.search);
+if(entryParams.get('tool')==='spatial'){
   state.mode='geometry';
   state.page='original';
   state.suite='hinh-hoc-3d';
@@ -966,13 +967,55 @@ function exampleCard(sample,heading='Ví dụ có lời giải',activity=false){
 document.getElementById('pinned-suites-nav').innerHTML=originalSuites.map(suite=>
   '<button type="button" data-original-suite="'+suite.base+'"><span aria-hidden="true">'+suite.icon+'</span>'+esc(suite.label)+'</button>').join('');
 function suiteInMode(suite){return inMode(Boolean(suite.geometry));}
-function openOriginalSuite(suite,toolId=''){
-  if(!['http:','https:'].includes(location.protocol))return false;
-  var target=new URL('./toan-goc/',location.href);
-  target.searchParams.set('bo',suite.base);
-  target.hash='/dashboard/'+suite.base+(toolId?'/'+toolId:'');
-  location.assign(target);
-  return true;
+var originalAssets, originalRelease, originalMounted;
+function createOriginalHistory(format,parse){
+  var items=[],index=-1,action='POP',listener,key=0;
+  function record(to,state){
+    var path=typeof to==='string'?parse(to):to;
+    return {pathname:path.pathname||'/',search:path.search||'',hash:path.hash||'',state:state??null,key:String(key++)};
+  }
+  function notify(next){action=next;listener?.({action,location:items[index]});}
+  items.push(record(window.MathLabOriginal.initialPath));
+  index=0;
+  return {
+    get action(){return action;},
+    get location(){return items[index];},
+    listen(callback){listener=callback;return ()=>{listener=null;};},
+    createHref(to){return '#'+(typeof to==='string'?to:format(to));},
+    encodeLocation(to){return typeof to==='string'?parse(to):to;},
+    push(to,state){items.splice(index+1,items.length,record(to,state));index++;notify('PUSH');},
+    replace(to,state){items[index]=record(to,state);notify('REPLACE');},
+    go(delta){index=Math.max(0,Math.min(index+delta,items.length-1));notify('POP');}
+  };
+}
+function servedMathLab(){return ['http:','https:'].includes(location.protocol);}
+function loadOriginalModule(){
+  if(originalAssets)return originalAssets;
+  window.MathLabOriginal={createHistory:createOriginalHistory};
+  [
+    './toan-goc/static/css/main.e8ebd773.css',
+    './toan-goc/fonts/index.css',
+    'https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap'
+  ].forEach(href=>{
+    var link=document.createElement('link');
+    link.rel='stylesheet';link.href=href;
+    if(!Array.from(document.styleSheets,sheet=>sheet.href).includes(link.href))document.head.append(link);
+  });
+  originalAssets=new Promise((resolve,reject)=>{
+    var script=document.createElement('script');
+    script.src='./toan-goc/static/js/main.d89350d1.js?tool=3';
+    script.onload=()=>typeof window.MathLabOriginal.mount==='function'?resolve():reject(Error('Giao diện gốc chưa sẵn sàng.'));
+    script.onerror=()=>{script.remove();reject(Error('Không tải được giao diện gốc.'));};
+    document.head.append(script);
+  }).catch(error=>{originalAssets=null;throw error;});
+  return originalAssets;
+}
+function releaseOriginalModule(){
+  if(!originalMounted)return;
+  originalRelease?.();
+  document.title=originalMounted.title;
+  originalMounted=null;
+  originalRelease=null;
 }
 function pinnedSuites(){
   return '<section class="pinned-suites" aria-labelledby="pinned-suites-title"><h2 id="pinned-suites-title">Bộ công cụ</h2>'+
@@ -1989,12 +2032,29 @@ function suiteSolid(host) {
 function originalPage(){
   var tool=originalTools.find(item=>item.id===state.suite);
   var related=originalTools.filter(item=>item.suite===tool.suite);
+  var spatial=tool.id==='hinh-hoc-3d';
+  var usingOriginal=servedMathLab()&&(!spatial||state.tool==='source-spatial');
+  var spatialSwitch=spatial&&servedMathLab()?'<button class="btn outline" type="button" data-spatial-mode="'+
+    (usingOriginal?'built-in':'original')+'">'+(usingOriginal?'Khảo sát hình khối':'Khối tròn xoay')+'</button>':'';
   app.innerHTML='<div class="original-heading"><div class="page-title"><h1>'+esc(tool.name)+'</h1></div>'+
     '<div class="filter-bar"><button class="btn outline" type="button" data-original-suite="'+esc(tool.suite.base)+'">← '+esc(tool.suite.label)+'</button>'+
-    filterSelect('original-tool-select','Trong bộ công cụ',related.map(item=>[item.id,item.name]),tool.id)+'</div></div>'+
-    (tool.id==='hinh-hoc-3d'?'':exampleCard(originalExamples[tool.id],'Thử với ví dụ này',true))+
+    filterSelect('original-tool-select','Chọn công cụ',related.map(item=>[item.id,item.name]),tool.id)+spatialSwitch+'</div></div>'+
+    (spatial?'':exampleCard(originalExamples[tool.id],'Thử với ví dụ này',true))+
     '<div id="original-content"></div>';
   var host=document.getElementById('original-content');
+  if(usingOriginal){
+    host.innerHTML='<section class="mathlab-original" aria-label="'+esc(tool.name)+'"><p class="original-loading" role="status">Đang tải công cụ…</p><div id="root"></div></section>';
+    var root=host.querySelector('#root'),loading=root.previousElementSibling;
+    loadOriginalModule().then(()=>{
+      if(!root.isConnected)return;
+      originalMounted={title:document.title};
+      originalRelease=window.MathLabOriginal.mount(root,'/dashboard/'+tool.suite.base+'/'+tool.id);
+      loading.remove();
+    }).catch(error=>{
+      if(root.isConnected)loading.textContent=error.message;
+    });
+    return;
+  }
   var id=tool.id.split('/').at(-1);
   var renderTool={
     'hinh-hoc-va-do-luong':suiteGeometry,
@@ -2941,7 +3001,7 @@ app.addEventListener('click',function(event){
 app.addEventListener('change',function(event){
   var input=event.target;
   if(input.id==='original-tool-select'){
-    navigate({suite:input.value});
+    navigate({suite:input.value,tool:''});
     document.getElementById(input.id).focus({preventScroll:true});
     return;
   }
@@ -3800,6 +3860,7 @@ function numericSubstitution(tool,v,title) {
 }
 
 function render(){
+  releaseOriginalModule();
   activeNav();
   if(state.page==='home')home();
   else if(state.page==='search')searchPage();
@@ -4160,15 +4221,14 @@ if(b.dataset.mode&&b.dataset.mode!==state.mode){
 }
 if(b.dataset.originalSuite){
   var suite=originalSuites.find(item=>item.base===b.dataset.originalSuite);
-  if(openOriginalSuite(suite))return;
   navigate({page:'original-suite',suite:suite.base,mode:suite.geometry?'geometry':'number',cat:'all',query:''});
   return;
 }
 if(b.dataset.originalTool){
   var original=originalTools.find(tool=>tool.id===b.dataset.originalTool);
-  if(original.id!=='hinh-hoc-3d'&&openOriginalSuite(original.suite,original.id))return;
-  navigate({page:'original',suite:original.id,query:''});return;
+  navigate({page:'original',suite:original.id,mode:original.suite.geometry?'geometry':'number',tool:'',query:''});return;
 }
+if(b.dataset.spatialMode){navigate({tool:b.dataset.spatialMode==='original'?'source-spatial':''});return;}
 if(b.dataset.view){
   if(b.dataset.view==='geometry-models')activeGeometryModel=null;
   navigate({page:b.dataset.view,query:'',cat:'all',tool:b.dataset.view==='tools'?'':state.tool});return;
@@ -4200,5 +4260,11 @@ document.addEventListener('keydown',function(e){
     search.focus();
   }
 });
+var sharedSuite=originalSuites.find(suite=>suite.base===entryParams.get('suite'));
+if(sharedSuite&&servedMathLab()){
+  var linkedTool=originalTools.find(tool=>tool.suite===sharedSuite&&tool.id===entryParams.get('entry'));
+  Object.assign(state,{page:linkedTool?'original':'original-suite',suite:linkedTool?.id||sharedSuite.base,
+    tool:linkedTool?.id==='hinh-hoc-3d'?'source-spatial':'',mode:sharedSuite.geometry?'geometry':'number'});
+}
 render();
 })();

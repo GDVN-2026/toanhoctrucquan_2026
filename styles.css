@@ -115,6 +115,21 @@ h1, h2, h3, p { margin: 0; }
 .mode-switch button { min-height: 34px; padding: 4px 14px; border: 0; border-radius: 7px; color: var(--blue); background: transparent; font-weight: 750; }
 .mode-switch button[aria-pressed="true"] { background: var(--active-fill); color: #fff; }
 main { padding: 17px 27px 32px; flex: 1; min-width: 0; }
+.mathlab-original {
+  position: relative; isolation: isolate; contain: layout;
+  min-height: 220px; overflow: auto;
+  border: 1px solid var(--line); border-radius: 10px; background: #fff; color-scheme: light;
+}
+.mathlab-original > #root {
+  min-height: 100%; color: #212b36;
+  font: 14px/1.55 "Public Sans", Arial, sans-serif;
+}
+.mathlab-original :where(#root *) { margin: 0; padding: 0; }
+.mathlab-original :where(img) { display: block; max-width: 100%; }
+.mathlab-original .original-loading { margin: 15px; }
+.mathlab-original .MuiContainer-root { max-width: none; padding: clamp(10px, 2vw, 20px); }
+.mathlab-original .MuiBox-root:has(> .MuiBreadcrumbs-root) { display: none; }
+.mathlab-original .MuiBox-root:has(> .MuiBox-root > .MuiBox-root > .MuiBreadcrumbs-root) { display: none; }
 .filters { display: flex; flex-wrap: wrap; gap: 7px; }
 .chip, .btn {
   padding: 7px 11px; min-height: 41px; border: 1px solid var(--line); border-radius: 8px; color: var(--blue); background: var(--panel); font-size: .91rem; font-weight: 735;
